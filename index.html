@@ -1,63 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Carte Interactive du Cave Game</title>
-    <meta charset="utf-8" />
+    <title>Cave Game | Interactive Map</title>
     <style>
-        .cell {
-            width: 50px;
-            height: 50px;
-            stroke: #999;
-        }
-        .revealed {
-            fill: #ccc;
-        }
-        .unrevealed {
-            fill: #333;
-        }
-        .selected {
-            stroke: #f00;
-            stroke-width: 2px;
-        }
-        .diggable {
-            fill: green;
-        }
-        .last-revealed {
-            fill: yellow;
-        }
-        #info {
-            position: fixed;
+        #map { height: 800px; width: 800px; margin: auto; position: relative; }
+        #controls { text-align: center; margin-top: 20px; }
+        #info-box {
+            position: absolute;
             top: 10px;
             right: 10px;
-            background-color: white;
-            border: 1px solid #ccc;
+            background: white;
             padding: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ccc;
             z-index: 1000;
         }
-        #sheep-select {
-            position: fixed;
-            top: 80px;
-            right: 10px;
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+        svg {
+            display: block;
         }
     </style>
 </head>
 <body>
-<div id="map"></div>
-<div id="info">Click on a cell to get infos</div>
-<div id="sheep-select">
-    <label for="sheepId">Select Sheep ID:</label>
-    <select id="sheepId">
-        <option value="">Select a sheep</option>
-    </select>
+<div id="map">
+    <div id="info-box">
+        <p id="cell-info">Click on a cell to get infos</p>
+    </div>
 </div>
-<button id="testButton">Test Translation</button>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script type="module" src="./map.js"></script>
+<div id="controls">
+    <input type="number" id="x-coord" placeholder="X" />
+    <input type="number" id="y-coord" placeholder="Y" />
+    <button id="center-btn">Center</button>
+</div>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+    const width = 800;
+    const height = 800;
+    const gridSize = 400;
+    const cellSize = 2;
+
+    const COLORS = {
+        REVEALED: "#ccc",
+        ACTUAL: "red",
+        DIGGABLE: "green"
+    };
+
+    const svg = d3.select("#map").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const container = svg.append("g");
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.5, 10])
+        .on("zoom", (event) => {
+            container.attr("transform", event.transform);
+        });
+
+    svg.call(zoom);
+
+    function drawGrid() {
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                container.append("rect")
+                    .attr("x", i * cellSize)
+                    .attr("y", j * cellSize)
+                    .attr("width", cellSize)
+                    .attr("height", cellSize)
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 0.25)
+                    .attr("fill", "#333")
+                    .attr("diggable", "false")
+                    .attr("revealed", "false")
+                    .on("click", () => {
+                        const rect = container.select(`rect[x="${i * cellSize}"][y="${j * cellSize}"]`);
+                        const revealed = rect.attr("revealed");
+                        const diggable = rect.attr("diggable");
+
+                        document.getElementById('cell-info').innerHTML = `Position: (${i}, ${j})<br>Revealed: ${revealed}<br>Diggable: ${diggable}`;
+                    });
+            }
+        }
+    }
+
+    function setActualCell(x, y, diggable) {
+        const rect = container.select(`rect[x="${x * cellSize}"][y="${y * cellSize}"]`);
+
+        rect
+            .attr("fill", diggable ? COLORS.DIGGABLE : COLORS.ACTUAL)
+            .attr("revealed", "true")
+            .attr("diggable", diggable.toString());
+    }
+
+    function setHistoryCell(x, y) {
+        const rect = container.select(`rect[x="${x * cellSize}"][y="${y * cellSize}"]`);
+        const diggable = rect.attr("diggable");
+
+        rect
+            .attr("fill", diggable === "true" ? COLORS.DIGGABLE : COLORS.REVEALED)
+            .attr("revealed", "true");
+    }
+
+    function processAndRenderData(data) {
+        data.forEach(item => {
+            const { history, coordinates: { x, y }, diggable } = item;
+
+            // Color cells from history
+            history.forEach(position => {
+                const x = Math.floor(position % gridSize);
+                const y = Math.floor(position / gridSize);
+
+                setHistoryCell(x, y);
+            });
+
+            // Color current position
+            setActualCell(x, y, diggable);
+        });
+    }
+
+    // Fetch data from the server
+    const urlParams = new URLSearchParams(window.location.search);
+    const COLLECTION_NAME = urlParams.get('cave') || '35';
+    const BACKEND_URL = 'cavegame.slkzgm.com';
+
+    fetch(`https://${BACKEND_URL}/data?collectionName=${COLLECTION_NAME}`)
+        .then(response => response.json())
+        .then(data => {
+            processAndRenderData(data);
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+
+    // Retrieve data from websocket
+    const socket = new WebSocket(`wss://${BACKEND_URL}`);
+
+    socket.addEventListener('message', function (event) {
+        const data = JSON.parse(event.data);
+        console.log('Message from server ', data);
+        processAndRenderData([data]);
+    });
+
+    drawGrid();
+
+    document.getElementById('center-btn').addEventListener('click', function() {
+        const x = parseInt(document.getElementById('x-coord').value) * cellSize;
+        const y = parseInt(document.getElementById('y-coord').value) * cellSize;
+        const currentTransform = d3.zoomTransform(svg.node());
+        const scale = currentTransform.k;
+        const translateX = width / 2 - x * scale;
+        const translateY = height / 2 - y * scale;
+        const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+        svg.transition().duration(750).call(zoom.transform, transform);
+    });
+
+</script>
 </body>
 </html>

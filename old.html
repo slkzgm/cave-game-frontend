@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carte Interactive du Cave Game</title>
+    <meta charset="utf-8" />
+    <style>
+        .cell {
+            width: 50px;
+            height: 50px;
+            stroke: #999;
+        }
+        .revealed {
+            fill: #ccc;
+        }
+        .unrevealed {
+            fill: #333;
+        }
+        .selected {
+            stroke: #f00;
+            stroke-width: 2px;
+        }
+        .diggable {
+            fill: green;
+        }
+        .last-revealed {
+            fill: yellow;
+        }
+        #info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        #sheep-select {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="info">Click on a cell to get infos</div>
+<div id="sheep-select">
+    <label for="sheepId">Select Sheep ID:</label>
+    <select id="sheepId">
+        <option value="">Select a sheep</option>
+    </select>
+</div>
+<button id="testButton">Test Translation</button>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="module" src="./map.js"></script>
+</body>
+</html>
