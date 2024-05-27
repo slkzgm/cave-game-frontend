@@ -14,6 +14,15 @@
             border: 1px solid #ccc;
             z-index: 1000;
         }
+        #sheep-selector-box {
+            position: absolute;
+            top: 100px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            z-index: 1000;
+        }
         svg {
             display: block;
         }
@@ -23,6 +32,11 @@
 <div id="map">
     <div id="info-box">
         <p id="cell-info">Click on a cell to get infos</p>
+    </div>
+    <div id="sheep-selector-box">
+        <select id="sheep-selector">
+            <option value="">Select a sheep</option>
+        </select>
     </div>
 </div>
 <div id="controls">
@@ -56,6 +70,8 @@
         });
 
     svg.call(zoom);
+
+    const sheepData = {};
 
     function drawGrid() {
         for (let i = 0; i < gridSize; i++) {
@@ -101,9 +117,12 @@
 
     function processAndRenderData(data) {
         data.forEach(item => {
-            const { history, coordinates: { x, y }, diggable } = item;
+            const { sheepId, totalSteps, history, coordinates: { x, y }, diggable } = item;
 
-            // Color cells from history
+            // Stocker les informations sur les moutons
+            sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
+
+            // Colorer les cellules de l'historique
             history.forEach(position => {
                 const x = Math.floor(position % gridSize);
                 const y = Math.floor(position / gridSize);
@@ -111,9 +130,34 @@
                 setHistoryCell(x, y);
             });
 
-            // Color current position
+            // Colorer la position actuelle
             setActualCell(x, y, diggable);
         });
+
+        updateSheepSelector();
+    }
+
+    function updateSheepSelector() {
+        const sheepSelector = document.getElementById('sheep-selector');
+        sheepSelector.innerHTML = '<option value="">Select a sheep</option>';
+
+        Object.keys(sheepData).forEach(sheepId => {
+            const { coordinates: { x, y } } = sheepData[sheepId];
+            const option = document.createElement('option');
+            option.value = sheepId;
+            option.textContent = `Sheep ${sheepId} (x: ${x}, y: ${y})`;
+            sheepSelector.appendChild(option);
+        });
+    }
+
+    function centerOnSheep(sheepId) {
+        const { coordinates: { x, y } } = sheepData[sheepId];
+        const currentTransform = d3.zoomTransform(svg.node());
+        const scale = currentTransform.k;
+        const translateX = width / 2 - x * cellSize * scale;
+        const translateY = height / 2 - y * cellSize * scale;
+        const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+        svg.transition().duration(750).call(zoom.transform, transform);
     }
 
     // Fetch data from the server
@@ -150,6 +194,13 @@
         const translateY = height / 2 - y * scale;
         const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
         svg.transition().duration(750).call(zoom.transform, transform);
+    });
+
+    document.getElementById('sheep-selector').addEventListener('change', function() {
+        const sheepId = this.value;
+        if (sheepId) {
+            centerOnSheep(sheepId);
+        }
     });
 
 </script>
