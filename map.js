@@ -1,5 +1,5 @@
 const urlParams = new URLSearchParams(window.location.search);
-const COLLECTION_NAME = urlParams.get('collection') || '25';
+const COLLECTION_NAME = urlParams.get('cave') || '25';
 
 const BACKEND_URL = 'cavegame.slkzgm.com';
 
