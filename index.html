@@ -92,8 +92,14 @@
     let socket = null;
 
     function drawGrid() {
+        const centerX = 200;
+        const centerY = 200;
+        const halfSize = 10;
+
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
+                const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? "#956565" : "#333";
+
                 container.append("rect")
                     .attr("x", i * cellSize)
                     .attr("y", j * cellSize)
@@ -101,7 +107,7 @@
                     .attr("height", cellSize)
                     .attr("stroke", "black")
                     .attr("stroke-width", 0.25)
-                    .attr("fill", "#333")
+                    .attr("fill", fillColor)
                     .attr("diggable", "false")
                     .attr("revealed", "false")
                     .on("click", () => {
