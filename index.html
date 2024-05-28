@@ -48,7 +48,7 @@
         </select>
     </div>
     <div id="cave-selector-box">
-        <p id="current-cave">Current Cave: 35</p>
+        <p id="current-cave">Current Cave: No Cave Selected</p>
         <input type="number" id="cave-number" placeholder="Enter cave number" />
         <button id="cave-btn">Load Cave</button>
     </div>
@@ -60,6 +60,8 @@
 </div>
 <script src="https://d3js.org/d3.v6.min.js"></script>
 <script>
+    const BACKEND_URL = 'cavegame.slkzgm.com';
+
     const width = 800;
     const height = 800;
     const gridSize = 400;
@@ -85,11 +87,7 @@
 
     svg.call(zoom);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let COLLECTION_NAME = urlParams.get('cave') || '35';
-    const BACKEND_URL = 'cavegame.slkzgm.com';
-
-    const sheepData = {};
+    let sheepData = {};
 
     function drawGrid() {
         for (let i = 0; i < gridSize; i++) {
@@ -178,31 +176,48 @@
         svg.transition().duration(750).call(zoom.transform, transform);
     }
 
-    function loadCaveData() {
-        fetch(`https://${BACKEND_URL}/data?collectionName=${COLLECTION_NAME}`)
+    function loadCaveData(caveId) {
+        fetch(`https://${BACKEND_URL}/data?collectionName=${caveId}`)
             .then(response => response.json())
             .then(data => {
+                document.getElementById('current-cave').innerText = `Current Cave: ${caveId}`;
                 processAndRenderData(data);
-                document.getElementById('current-cave').innerText = `Current Cave: ${COLLECTION_NAME}`;
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
             });
 
-        // WebSocket pour récupérer les données en temps réel
-        const socket = new WebSocket(`wss://${BACKEND_URL}`);
+        // Fonction pour initialiser le WebSocket avec reconnexion automatique
+        function connectWebSocket(caveId) {
+            const socket = new WebSocket(`wss://${BACKEND_URL}`);
 
-        socket.addEventListener('message', function (event) {
-            const data = JSON.parse(event.data);
-            console.log('Message from server ', data);
-            processAndRenderData([data]);
-        });
+            socket.addEventListener('open', function (event) {
+                console.log('Connected to WebSocket');
+            });
+
+            socket.addEventListener('message', function (event) {
+                const data = JSON.parse(event.data);
+                if (data.caveId === caveId) {
+                    console.log('Message from server ', data);
+                    processAndRenderData([data]);
+                }
+            });
+
+            socket.addEventListener('close', function (event) {
+                console.error('WebSocket closed, attempting to reconnect in 5 seconds...', event);
+                setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+            });
+
+            socket.addEventListener('error', function (event) {
+                console.error('WebSocket error, attempting to reconnect in 5 seconds...', event);
+                socket.close();
+                setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+            });
+        }
+
+        // Initial connection
+        connectWebSocket(caveId);
     }
-
-
-    document.getElementById('cave-number').value = COLLECTION_NAME;
-    drawGrid();
-    loadCaveData();
 
     document.getElementById('center-btn').addEventListener('click', function() {
         const x = parseInt(document.getElementById('x-coord').value) * cellSize;
@@ -223,9 +238,12 @@
     });
 
     document.getElementById('cave-btn').addEventListener('click', function() {
+        const caveId = parseInt(document.getElementById('cave-number').value);
+        sheepData = {};
         container.selectAll("rect").remove();
+
         drawGrid();
-        loadCaveData();
+        loadCaveData(caveId);
     });
 
 </script>
