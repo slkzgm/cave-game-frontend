@@ -68,10 +68,13 @@
     const cellSize = 2;
 
     const COLORS = {
+        UNREVEALED: "#333",
         REVEALED: "#ccc",
         ACTUAL: "#8f0606",
-        DIGGABLE: "green",
-        WALLS: "#ff0000"
+        DIGGABLE: "#ffd900",
+        DIGGED: "#59e134",
+        WALLS: "#ff0000",
+        DUTYFREE: "#956565"
     };
 
     const CELL_TYPE = {
@@ -132,7 +135,7 @@
 
         for (let i = 0; i < gridSize; i++) {
             for (let j = 0; j < gridSize; j++) {
-                const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? "#956565" : "#333";
+                const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? COLORS.DUTYFREE : COLORS.UNREVEALED;
 
                 container.append("rect")
                     .attr("x", i * cellSize)
@@ -158,11 +161,22 @@
         }
     }
 
-    function drawBorders(x, y, cellType) {
+    function drawVisible(visibleCell) {
+        const { x, y, directions, diggable } = visibleCell;
         const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
 
+        // Attribuer revealed et diggable
+        if (rect.attr("revealed") === "false") {
+            rect.attr("revealed", "true");
+            rect.attr("diggable", diggable.toString())
+
+            // Colorer la case
+            rect.attr("fill", diggable ? COLORS.DIGGABLE : COLORS.REVEALED);
+        }
+
+        // Dessiner les bordures si pas deja fait
         if (rect.attr("border-drawn") === "false") {
-            const borders = CELL_TYPE[cellType];
+            const borders = CELL_TYPE[directions];
 
             if (borders) {
                 if (borders.left) {
@@ -206,21 +220,19 @@
         }
     }
 
-    function setActualCell(x, y, diggable) {
+    function setActualCell(x, y) {
         const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
 
-        rect
-            .attr("fill", diggable ? COLORS.DIGGABLE : COLORS.ACTUAL)
-            .attr("revealed", "true")
-            .attr("diggable", diggable.toString());
+        rect.attr("fill", COLORS.ACTUAL);
     }
 
     function setHistoryCell(x, y) {
         const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
+
         const diggable = rect.attr("diggable");
 
         rect
-            .attr("fill", diggable === "true" ? COLORS.DIGGABLE : COLORS.REVEALED)
+            .attr("fill", diggable === "true" ? COLORS.DIGGED : COLORS.REVEALED)
             .attr("revealed", "true");
     }
 
@@ -232,9 +244,7 @@
             sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
 
             // // Dessiner les murs
-            visible.forEach(cell => {
-                drawBorders(cell.x, cell.y, cell.directions);
-            });
+            visible.forEach(drawVisible);
 
             // Colorer les cellules de l'historique
             history.forEach(position => {
@@ -245,7 +255,7 @@
             });
 
             // Colorer la position actuelle
-            setActualCell(x, y, diggable);
+            setActualCell(x, y);
         });
 
         updateSheepSelector();
