@@ -69,9 +69,43 @@
 
     const COLORS = {
         REVEALED: "#ccc",
-        ACTUAL: "red",
-        DIGGABLE: "green"
+        ACTUAL: "#8f0606",
+        DIGGABLE: "green",
+        WALLS: "#ff0000"
     };
+
+    const CELL_TYPE = {
+        2: { top: true, right: true, bottom: true },
+        4: { left: true, top: true, bottom: true },
+        6: { top: true, bottom: true },
+        8: { left: true, bottom: true, right: true },
+        10: { right: true, bottom: true },
+        12: { left: true, bottom: true },
+        14: { bottom: true },
+        16: { left: true, right: true, top: true },
+        18: { top: true, right: true },
+        20: { left: true, top: true },
+        22: { top: true },
+        24: { left: true, right: true },
+        26: { right: true },
+        28: { left: true },
+        30: {},
+        50: { right: true, bottom: true, top: true },
+        52: { left: true, bottom: true, top: true },
+        54: { top: true, bottom: true },
+        56: { left: true, bottom: true, right: true },
+        58: { right: true, bottom: true },
+        60: { left: true, bottom: true },
+        62: { bottom: true },
+        64: { left: true, right: true, top: true },
+        66: { top: true, right: true },
+        68: { left: true, top: true },
+        70: { top: true },
+        72: { left: true, right: true },
+        74: { right: true },
+        76: { left: true },
+        78: {}
+    }
 
     const svg = d3.select("#map").append("svg")
         .attr("width", width)
@@ -110,8 +144,11 @@
                     .attr("fill", fillColor)
                     .attr("diggable", "false")
                     .attr("revealed", "false")
+                    .attr("border-drawn", "false")
+                    .attr("coord-x", i)
+                    .attr("coord-y", j)
                     .on("click", () => {
-                        const rect = container.select(`rect[x="${i * cellSize}"][y="${j * cellSize}"]`);
+                        const rect = container.select(`rect[coord-x="${i}"][coord-y="${j}"]`);
                         const revealed = rect.attr("revealed");
                         const diggable = rect.attr("diggable");
 
@@ -121,8 +158,56 @@
         }
     }
 
+    function drawBorders(x, y, cellType) {
+        const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
+
+        if (rect.attr("border-drawn") === "false") {
+            const borders = CELL_TYPE[cellType];
+
+            if (borders) {
+                if (borders.left) {
+                    container.append("line")
+                        .attr("x1", x * cellSize)
+                        .attr("y1", y * cellSize)
+                        .attr("x2", x * cellSize)
+                        .attr("y2", y * cellSize + cellSize)
+                        .attr("stroke", COLORS.WALLS)
+                        .attr("stroke-width", 0.5);
+                }
+                if (borders.top) {
+                    container.append("line")
+                        .attr("x1", x * cellSize)
+                        .attr("y1", y * cellSize)
+                        .attr("x2", x * cellSize + cellSize)
+                        .attr("y2", y * cellSize)
+                        .attr("stroke", COLORS.WALLS)
+                        .attr("stroke-width", 0.5);
+                }
+                if (borders.right) {
+                    container.append("line")
+                        .attr("x1", x * cellSize + cellSize)
+                        .attr("y1", y * cellSize)
+                        .attr("x2", x * cellSize + cellSize)
+                        .attr("y2", y * cellSize + cellSize)
+                        .attr("stroke", COLORS.WALLS)
+                        .attr("stroke-width", 0.5);
+                }
+                if (borders.bottom) {
+                    container.append("line")
+                        .attr("x1", x * cellSize)
+                        .attr("y1", y * cellSize + cellSize)
+                        .attr("x2", x * cellSize + cellSize)
+                        .attr("y2", y * cellSize + cellSize)
+                        .attr("stroke", COLORS.WALLS)
+                        .attr("stroke-width", 0.5);
+                }
+            }
+            rect.attr("border-drawn", "true");
+        }
+    }
+
     function setActualCell(x, y, diggable) {
-        const rect = container.select(`rect[x="${x * cellSize}"][y="${y * cellSize}"]`);
+        const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
 
         rect
             .attr("fill", diggable ? COLORS.DIGGABLE : COLORS.ACTUAL)
@@ -131,7 +216,7 @@
     }
 
     function setHistoryCell(x, y) {
-        const rect = container.select(`rect[x="${x * cellSize}"][y="${y * cellSize}"]`);
+        const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
         const diggable = rect.attr("diggable");
 
         rect
@@ -141,10 +226,15 @@
 
     function processAndRenderData(data) {
         data.forEach(item => {
-            const { sheepId, totalSteps, history, coordinates: { x, y }, diggable } = item;
+            const { sheepId, totalSteps, history, visible, coordinates: { x, y }, diggable } = item;
 
             // Stocker les informations sur les moutons
             sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
+
+            // // Dessiner les murs
+            visible.forEach(cell => {
+                drawBorders(cell.x, cell.y, cell.directions);
+            });
 
             // Colorer les cellules de l'historique
             history.forEach(position => {
