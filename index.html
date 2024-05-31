@@ -557,7 +557,7 @@
 
     async function fetchLastCaveDetails() {
         try {
-            const response = await fetch('http://localhost:9080/lastCave');
+            const response = await fetch(`https://${BACKEND_URL}/lastCave`);
             const caveDetails = await response.json();
             displayCaveDetails(caveDetails);
         } catch (error) {
