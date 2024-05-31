@@ -428,11 +428,16 @@
             });
     }
 
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 10;
+    const reconnectDelay = 5000;  // Délai de reconnexion initial de 5 secondes
+
     function connectWebSocket() {
         socket = new WebSocket(`wss://${BACKEND_URL}`);
 
         socket.addEventListener('open', function () {
             console.log('Connected to WebSocket');
+            reconnectAttempts = 0;  // Réinitialiser les tentatives de reconnexion
         });
 
         socket.addEventListener('message', function (event) {
@@ -444,15 +449,25 @@
         });
 
         socket.addEventListener('close', function () {
-            console.error('WebSocket closed, attempting to reconnect in 5 seconds...');
-            setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+            console.error('WebSocket closed, attempting to reconnect...');
+            attemptReconnect();
         });
 
         socket.addEventListener('error', function (event) {
-            console.error('WebSocket error, attempting to reconnect in 5 seconds...', event);
+            console.error('WebSocket error, attempting to reconnect...', event);
             socket.close();
-            setTimeout(connectWebSocket, 5000); // Reconnect after 5 seconds
+            attemptReconnect();
         });
+    }
+
+    function attemptReconnect() {
+        if (reconnectAttempts < maxReconnectAttempts) {
+            const delay = Math.min(reconnectDelay * Math.pow(2, reconnectAttempts), 60000);  // Limiter le délai à 60 secondes
+            reconnectAttempts++;
+            setTimeout(connectWebSocket, delay);
+        } else {
+            console.error('Max reconnect attempts reached. Please check the server.');
+        }
     }
 
     function changeCave(caveId) {
