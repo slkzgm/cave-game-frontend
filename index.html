@@ -430,41 +430,55 @@
 
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 10;
-    const reconnectDelay = 5000;  // Délai de reconnexion initial de 5 secondes
+    const reconnectDelay = 10000;  // Délai de reconnexion initial de 10 secondes
 
     function connectWebSocket() {
+        if (socket !== null) {
+            // Nettoyage des écouteurs pour éviter les doublons
+            socket.removeEventListener('open', handleSocketOpen);
+            socket.removeEventListener('message', handleSocketMessage);
+            socket.removeEventListener('close', handleSocketClose);
+            socket.removeEventListener('error', handleSocketError);
+            socket.close();
+        }
+
         socket = new WebSocket(`wss://${BACKEND_URL}`);
 
-        socket.addEventListener('open', function () {
-            console.log('Connected to WebSocket');
-            reconnectAttempts = 0;  // Réinitialiser les tentatives de reconnexion
-        });
-
-        socket.addEventListener('message', function (event) {
-            const data = JSON.parse(event.data);
-            if (data.caveId === currentCaveId) {
-                console.log('Message from server ', data);
-                processAndRenderData([data]);
-            }
-        });
-
-        socket.addEventListener('close', function () {
-            console.error('WebSocket closed, attempting to reconnect...');
-            attemptReconnect();
-        });
-
-        socket.addEventListener('error', function (event) {
-            console.error('WebSocket error, attempting to reconnect...', event);
-            socket.close();
-            attemptReconnect();
-        });
+        socket.addEventListener('open', handleSocketOpen);
+        socket.addEventListener('message', handleSocketMessage);
+        socket.addEventListener('close', handleSocketClose);
+        socket.addEventListener('error', handleSocketError);
     }
 
+    function handleSocketOpen() {
+        console.log('Connected to WebSocket');
+        reconnectAttempts = 0;  // Réinitialiser les tentatives de reconnexion
+    }
+
+    function handleSocketMessage(event) {
+        const data = JSON.parse(event.data);
+        if (data.caveId === currentCaveId) {
+            console.log('Message from server ', data);
+            processAndRenderData([data]);
+        }
+    }
+
+    function handleSocketClose() {
+        console.error('WebSocket closed, attempting to reconnect...');
+        attemptReconnect();
+    }
+
+    function handleSocketError(event) {
+        console.error('WebSocket error, attempting to reconnect...', event);
+        attemptReconnect();
+    }
+
+    let reconnectTimeout;
     function attemptReconnect() {
         if (reconnectAttempts < maxReconnectAttempts) {
-            const delay = Math.min(reconnectDelay * Math.pow(2, reconnectAttempts), 60000);  // Limiter le délai à 60 secondes
             reconnectAttempts++;
-            setTimeout(connectWebSocket, delay);
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = setTimeout(connectWebSocket, reconnectDelay);
         } else {
             console.error('Max reconnect attempts reached. Please check the server.');
         }
