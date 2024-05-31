@@ -442,7 +442,7 @@
             socket.close();
         }
 
-        socket = new WebSocket(`wss://${BACKEND_URL}`);
+        socket = new WebSocket(`wss://${BACKEND_URL}/ws`);
 
         socket.addEventListener('open', handleSocketOpen);
         socket.addEventListener('message', handleSocketMessage);
@@ -456,10 +456,14 @@
     }
 
     function handleSocketMessage(event) {
-        const data = JSON.parse(event.data);
-        if (data.caveId === currentCaveId) {
+        const { type, data } = JSON.parse(event.data);
+        if (type === 'move') {
+            if (data.caveId === currentCaveId) {
+                console.log('Move message from server ', data);
+                processAndRenderData([data]);
+            }
+        } else {
             console.log('Message from server ', data);
-            processAndRenderData([data]);
         }
     }
 
