@@ -272,7 +272,7 @@
 
     let sheepData = {};
     let currentCaveId = null;
-    // let socket = null;
+    let socket = null;
 
     function drawGrid() {
         const centerX = 200;
@@ -538,9 +538,9 @@
         }
     });
 
-    // if (socket === null) {
-    //     connectWebSocket()
-    // }
+    if (socket === null) {
+        connectWebSocket()
+    }
 
     // Charger les couleurs depuis localStorage au démarrage
     loadColors();
