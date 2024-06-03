@@ -417,7 +417,7 @@
     }
 
     function loadCaveData(caveId) {
-        fetch(`https://${BACKEND_URL}/data?collectionName=${caveId}`)
+        fetch(`https://${BACKEND_URL}/cave?caveId=${caveId}`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('current-cave').innerText = `Current Cave: ${caveId}`;
