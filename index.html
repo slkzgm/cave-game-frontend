@@ -653,7 +653,7 @@
                 </div>
                 <div class="info-group">
                     <p><strong>Cave Closed:</strong> ${caveDetails.caveClosed}</p>
-                    <p><strong>Map File Visible:</strong> ${caveDetails.mapFileVisible}</p>
+                    ${caveDetails.mapFileVisible ? '<p><strong>Map File Visible:</strong> ${caveDetails.mapFileVisible}</p>' : ''}
                     <p><strong>Rope Available:</strong> ${caveDetails.ropeAvailable}</p>
                 </div>
                 <h3>Population</h3>
@@ -746,7 +746,7 @@
         </div>
         <div class="info-group">
             <p><strong>Cave Closed:</strong> ${cave.caveClosed}</p>
-            <p><strong>Map File Visible:</strong> ${cave.mapFileVisible}</p>
+            ${cave.mapFileVisible ? '<p><strong>Map File Visible:</strong> ${cave.mapFileVisible}</p>' : ''}
             <p><strong>Rope Available:</strong> ${cave.ropeAvailable}</p>
         </div>
         <h3>Population</h3>
