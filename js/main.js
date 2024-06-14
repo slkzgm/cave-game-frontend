@@ -55,4 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showTab('tab4');
         fetchLastCaveDetails();
     });
+    document.querySelector('.tab-button:nth-child(5)').addEventListener('click', () => {
+        window.open('https://github.com/slkzgm/cave-game-extension/releases/tag/v1.0.1', '_blank');
+    });
+    document.querySelector('.tab-button:nth-child(6)').addEventListener('click', () => {
+        window.open('https://discord.com/invite/PZyRJh4ntc', '_blank');
+    });
+    document.querySelector('.tab-button:nth-child(7)').addEventListener('click', () => {
+        window.open('https://x.com/cavegamebot', '_blank');
+    });
 });
