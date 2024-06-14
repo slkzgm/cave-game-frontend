@@ -17,7 +17,7 @@ export function connectWebSocket() {
         socket.close();
     }
 
-    socket = new WebSocket(`ws://${BACKEND_URL}/ws`);
+    socket = new WebSocket(`wss://${BACKEND_URL}/ws`);
 
     socket.addEventListener('open', handleSocketOpen);
     socket.addEventListener('message', handleSocketMessage);

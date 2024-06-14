@@ -1,6 +1,7 @@
 import { COLORS } from './constants.js';
 import { drawGrid, loadCaveData } from './grid.js';
-import { getCurrentCaveData, setCurrentCaveData, getSheepData } from './state.js';
+import { getCurrentCaveData, setCurrentCaveData, getSheepData, getCurrentCaveId } from './state.js';
+import { BACKEND_URL } from './constants.js';
 
 export function loadColors() {
     const savedColors = JSON.parse(localStorage.getItem('colors'));

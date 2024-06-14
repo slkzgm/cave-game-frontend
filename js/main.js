@@ -1,11 +1,19 @@
 import { drawGrid, changeCave, centerOnSheep } from './grid.js';
 import { connectWebSocket } from './websocket.js';
-import { loadColors, applyColors, resetColors, displayActualCaveDetails, fetchAvailableCaves, fetchLastCaveDetails } from './ui.js';
+import {
+    loadColors,
+    applyColors,
+    resetColors,
+    displayActualCaveDetails,
+    fetchAvailableCaves,
+    fetchLastCaveDetails,
+    showTab
+} from './ui.js';
 import { getSheepData } from './state.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    drawGrid();
     loadColors();
+    drawGrid();
 
     if (!window.socket) {
         connectWebSocket();
@@ -33,7 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('apply-colors-btn').addEventListener('click', applyColors);
     document.getElementById('reset-colors-btn').addEventListener('click', resetColors);
-    document.querySelector('.tab-button:nth-child(2)').addEventListener('click', displayActualCaveDetails);
-    document.querySelector('.tab-button:nth-child(3)').addEventListener('click', fetchAvailableCaves);
-    document.querySelector('.tab-button:nth-child(4)').addEventListener('click', fetchLastCaveDetails);
+
+    document.querySelector('.tab-button:nth-child(1)').addEventListener('click', () => showTab('tab1'));
+    document.querySelector('.tab-button:nth-child(2)').addEventListener('click', () => {
+        showTab('tab2');
+        displayActualCaveDetails();
+    });
+    document.querySelector('.tab-button:nth-child(3)').addEventListener('click', () => {
+        showTab('tab3');
+        fetchAvailableCaves();
+    });
+    document.querySelector('.tab-button:nth-child(4)').addEventListener('click', () => {
+        showTab('tab4');
+        fetchLastCaveDetails();
+    });
 });

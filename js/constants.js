@@ -1,4 +1,4 @@
-export const BACKEND_URL = '172.18.32.103:9080';
+export const BACKEND_URL = 'cavegame.slkzgm.com';
 
 export const COLORS = {
     UNREVEALED: "#333333",
