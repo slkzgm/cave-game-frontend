@@ -5,7 +5,7 @@ import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
 const width = 800;
 const height = 800;
 const cellSize = 2;
-const gridSize = 400;
+const gridSize = 600;
 
 const svg = d3.select("#map").append("svg")
     .attr("width", width)
