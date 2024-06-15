@@ -22,8 +22,8 @@ const zoom = d3.zoom()
 svg.call(zoom);
 
 export function drawGrid() {
-    const centerX = 200;
-    const centerY = 200;
+    const centerX = 300;
+    const centerY = 300;
     const halfSize = 10;
 
     for (let i = 0; i < gridSize; i++) {
