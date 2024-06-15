@@ -13,7 +13,7 @@ import { getSheepData } from './state.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadColors();
-    drawGrid();
+    // drawGrid();
 
     if (!window.socket) {
         connectWebSocket();
