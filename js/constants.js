@@ -2,12 +2,13 @@ export const BACKEND_URL = 'cavegame.slkzgm.com';
 
 export const COLORS = {
     UNREVEALED: "#333333",
-    REVEALED: "#cccccc",
-    ACTUAL: "#ffffff",
+    REVEALED: "#fff",
+    ACTUAL: "#fff",
     DIGGABLE: "#00fff7",
     DIGGED: "#0050b7",
-    WALLS: "#ff0000",
-    DUTYFREE: "#956565"
+    WALLS: "#ff4c4c",
+    DUTYFREE: "#956565",
+    GRID:"#111"
 };
 
 export const CELL_TYPE = {

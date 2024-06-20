@@ -2,58 +2,96 @@ import { COLORS, CELL_TYPE, BACKEND_URL } from './constants.js';
 import { updateSheepSelector, updateCaveDetails } from './ui.js';
 import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
 
-const width = 800;
-const height = 800;
-const cellSize = 2;
+// const width = 800;
+// const height = 800;
+// const cellSize = 2;
+// const gridSize = 600;
+
+// const svg = d3.select("#map").append("svg")
+//     .attr("width", width)
+//     .attr("height", height);
+
+// const container = svg.append("g");
+
+// const zoom = d3.zoom()
+//     .scaleExtent([0.5, 10])
+//     .on("zoom", (event) => {
+//         container.attr("transform", event.transform);
+//     });
+
+// svg.call(zoom);
+
+let visibleCells = {};  // Object to store the state of each visible cell
+
+const canvas = document.getElementById('mazeCanvas');
+const context = canvas.getContext('2d');
+const cellSize = 10;
 const gridSize = 600;
 
-const svg = d3.select("#map").append("svg")
-    .attr("width", width)
-    .attr("height", height);
-
-const container = svg.append("g");
-
+const d3Canvas = d3.select(canvas);
 const zoom = d3.zoom()
     .scaleExtent([0.5, 10])
     .on("zoom", (event) => {
-        container.attr("transform", event.transform);
+        context.save();
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.translate(event.transform.x, event.transform.y);
+        context.scale(event.transform.k, event.transform.k);
+        drawGrid(); // Redraw the grid with new transformations
+        context.restore();
     });
 
-svg.call(zoom);
+d3Canvas.call(zoom);
+
+// export function drawGrid() {
+//     const centerX = 300;
+//     const centerY = 300;
+//     const halfSize = 10;
+
+//     for (let i = 0; i < gridSize; i++) {
+//         for (let j = 0; j < gridSize; j++) {
+//             const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? COLORS.DUTYFREE : COLORS.UNREVEALED;
+
+//             container.append("rect")
+//                 .attr("x", i * cellSize)
+//                 .attr("y", j * cellSize)
+//                 .attr("width", cellSize)
+//                 .attr("height", cellSize)
+//                 .attr("stroke", "black")
+//                 .attr("stroke-width", 0.25)
+//                 .attr("fill", fillColor)
+//                 .attr("diggable", "false")
+//                 .attr("revealed", "false")
+//                 .attr("movements", "0")
+//                 .attr("border-drawn", "false")
+//                 .attr("coord-x", i)
+//                 .attr("coord-y", j)
+//                 .on("click", () => {
+//                     const rect = container.select(`rect[coord-x="${i}"][coord-y="${j}"]`);
+//                     const revealed = rect.attr("revealed");
+//                     const diggable = rect.attr("diggable");
+//                     const movements = rect.attr("movements");
+
+//                     document.getElementById('cell-info').innerHTML = `Position: (${i}, ${j})<br>Revealed: ${revealed}<br>Diggable: ${diggable}<br>Movements: ${movements}`;
+//                 });
+//         }
+//     }
+// }
+
 
 export function drawGrid() {
-    const centerX = 300;
-    const centerY = 300;
-    const halfSize = 10;
-
+    context.clearRect(0, 0, canvas.width, canvas.height);
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
-            const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? COLORS.DUTYFREE : COLORS.UNREVEALED;
-
-            container.append("rect")
-                .attr("x", i * cellSize)
-                .attr("y", j * cellSize)
-                .attr("width", cellSize)
-                .attr("height", cellSize)
-                .attr("stroke", "black")
-                .attr("stroke-width", 0.25)
-                .attr("fill", fillColor)
-                .attr("diggable", "false")
-                .attr("revealed", "false")
-                .attr("movements", "0")
-                .attr("border-drawn", "false")
-                .attr("coord-x", i)
-                .attr("coord-y", j)
-                .on("click", () => {
-                    const rect = container.select(`rect[coord-x="${i}"][coord-y="${j}"]`);
-                    const revealed = rect.attr("revealed");
-                    const diggable = rect.attr("diggable");
-                    const movements = rect.attr("movements");
-
-                    document.getElementById('cell-info').innerHTML = `Position: (${i}, ${j})<br>Revealed: ${revealed}<br>Diggable: ${diggable}<br>Movements: ${movements}`;
-                });
+            context.fillStyle = COLORS.UNREVEALED;
+            context.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+            context.strokeStyle = COLORS.GRID;
+            context.strokeRect(i * cellSize, j * cellSize, cellSize, cellSize);
         }
     }
+    Object.keys(visibleCells).forEach(key => {
+        const [x, y] = key.split(',').map(Number);
+        redrawCell(x, y);
+    });
 }
 
 let heatColor = (movements) => {
@@ -61,77 +99,134 @@ let heatColor = (movements) => {
     if (movements <= 3) return 'yellow';
     if (movements <= 8) return 'orange';
     if (movements > 8) return 'red';
+    return '#fff';  // Default color
+
 };
 
+// export function drawVisible(visibleCell) {
+//     let { x, y, directions, diggable, movements } = visibleCell;
+//     const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
+
+//     rect.attr("revealed", "true");
+//     rect.attr("diggable", diggable.toString());
+
+//     if (!movements) {
+//         movements = parseInt(rect.attr("movements"));
+//     }
+
+//     if (movements > 0) {
+//         rect.attr("fill", heatColor(movements));
+//         rect.attr("movements", movements.toString());
+//     } else {
+//         rect.attr("fill", diggable ? COLORS.DIGGABLE : COLORS.REVEALED);
+//     }
+
+//     const borders = CELL_TYPE[directions];
+
+//     if (borders) {
+//         if (borders.left) {
+//             container.append("line")
+//                 .attr("x1", x * cellSize)
+//                 .attr("y1", y * cellSize)
+//                 .attr("x2", x * cellSize)
+//                 .attr("y2", y * cellSize + cellSize)
+//                 .attr("stroke", COLORS.WALLS)
+//                 .attr("stroke-width", 0.5);
+//         }
+//         if (borders.top) {
+//             container.append("line")
+//                 .attr("x1", x * cellSize)
+//                 .attr("y1", y * cellSize)
+//                 .attr("x2", x * cellSize + cellSize)
+//                 .attr("y2", y * cellSize)
+//                 .attr("stroke", COLORS.WALLS)
+//                 .attr("stroke-width", 0.5);
+//         }
+//         if (borders.right) {
+//             container.append("line")
+//                 .attr("x1", x * cellSize + cellSize)
+//                 .attr("y1", y * cellSize)
+//                 .attr("x2", x * cellSize + cellSize)
+//                 .attr("y2", y * cellSize + cellSize)
+//                 .attr("stroke", COLORS.WALLS)
+//                 .attr("stroke-width", 0.5);
+//         }
+//         if (borders.bottom) {
+//             container.append("line")
+//                 .attr("x1", x * cellSize)
+//                 .attr("y1", y * cellSize + cellSize)
+//                 .attr("x2", x * cellSize + cellSize)
+//                 .attr("y2", y * cellSize + cellSize)
+//                 .attr("stroke", COLORS.WALLS)
+//                 .attr("stroke-width", 0.5);
+//         }
+//     }
+//     rect.attr("border-drawn", "true");
+// }
+
+
 export function drawVisible(visibleCell) {
-    let { x, y, directions, diggable, movements } = visibleCell;
-    const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
+    const { x, y, directions, diggable, movements } = visibleCell;
+    visibleCells[`${x},${y}`] = visibleCell;  // Store cell state keyed by its coordinates
 
-    rect.attr("revealed", "true");
-    rect.attr("diggable", diggable.toString());
+    redrawCell(x, y);
+}
 
-    if (!movements) {
-        movements = parseInt(rect.attr("movements"));
-    }
+function redrawCell(x, y) {
+    const visibleCell = visibleCells[`${x},${y}`];
+    const { directions, movements } = visibleCell;
+    const canvasX = x * cellSize;
+    const canvasY = y * cellSize;
+    
+    context.fillStyle = heatColor(movements);
+    context.fillRect(canvasX, canvasY, cellSize, cellSize);
+    context.strokeStyle = COLORS.GRID;
+    context.strokeRect(canvasX, canvasY, cellSize, cellSize);
 
-    if (movements > 0) {
-        rect.attr("fill", heatColor(movements));
-        rect.attr("movements", movements.toString());
-    } else {
-        rect.attr("fill", diggable ? COLORS.DIGGABLE : COLORS.REVEALED);
-    }
+    drawBorders(canvasX, canvasY, directions);
+}
 
+function drawBorders(canvasX, canvasY, directions) {
+    context.strokeStyle = COLORS.WALLS;
+    context.lineWidth = 2;
     const borders = CELL_TYPE[directions];
-
     if (borders) {
         if (borders.left) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            context.beginPath();
+            context.moveTo(canvasX, canvasY);
+            context.lineTo(canvasX, canvasY + cellSize);
+            context.stroke();
         }
         if (borders.top) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            context.beginPath();
+            context.moveTo(canvasX, canvasY);
+            context.lineTo(canvasX + cellSize, canvasY);
+            context.stroke();
         }
         if (borders.right) {
-            container.append("line")
-                .attr("x1", x * cellSize + cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            context.beginPath();
+            context.moveTo(canvasX + cellSize, canvasY);
+            context.lineTo(canvasX + cellSize, canvasY + cellSize);
+            context.stroke();
         }
         if (borders.bottom) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize + cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            context.beginPath();
+            context.moveTo(canvasX, canvasY + cellSize);
+            context.lineTo(canvasX + cellSize, canvasY + cellSize);
+            context.stroke();
         }
     }
-    rect.attr("border-drawn", "true");
 }
+
 
 export function processAndRenderData(data) {
     const sheepData = getSheepData();
     const toDraw = Object.values(data.reduce((acc, currentObj) => {
         const { sheepId, totalSteps, coordinates: { x, y }} = currentObj;
-        const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
+        // const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
 
         sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
-        rect.attr("movements", "1");
+        // rect.attr("movements", "1");
 
         currentObj.visible.forEach(element => {
             acc[element.position] = element;
@@ -143,6 +238,9 @@ export function processAndRenderData(data) {
     toDraw.forEach(drawVisible);
     updateSheepSelector();
 }
+
+
+
 
 export function loadCaveData(caveId) {
     fetch(`https://${BACKEND_URL}/cave?caveId=${caveId}`)
@@ -160,7 +258,8 @@ export function loadCaveData(caveId) {
 export function changeCave(caveId) {
     setCurrentCaveId(caveId);
     document.getElementById('current-cave').innerText = `Current Cave: ${caveId}`;
-    container.selectAll("rect").remove();
+    // container.selectAll("rect").remove();
+    context.clearRect(0, 0, canvas.width, canvas.height);
     setSheepData({});
     drawGrid();
     loadCaveData(caveId);
