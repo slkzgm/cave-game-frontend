@@ -1,4 +1,4 @@
-import { drawGrid, changeCave, centerOnSheep } from './grid.js';
+import { drawGrid, changeCave, centerOn } from './grid.js';
 import { connectWebSocket } from './websocket.js';
 import {
     loadColors,
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('center-btn').addEventListener('click', () => {
         const x = parseInt(document.getElementById('x-coord').value);
         const y = parseInt(document.getElementById('y-coord').value);
-        centerOnSheep(x, y);
+        centerOn(x, y);
     });
 
     document.getElementById('sheep-selector').addEventListener('change', function() {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sheepId) {
             const sheepData = getSheepData();
             const { coordinates: { x, y } } = sheepData[sheepId];
-            centerOnSheep(x, y);
+            centerOn(x, y);
         }
     });
 

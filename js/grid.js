@@ -2,81 +2,46 @@ import { COLORS, CELL_TYPE, BACKEND_URL } from './constants.js';
 import { updateSheepSelector, updateCaveDetails } from './ui.js';
 import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
 
-// const width = 800;
-// const height = 800;
-// const cellSize = 2;
-// const gridSize = 600;
-
-// const svg = d3.select("#map").append("svg")
-//     .attr("width", width)
-//     .attr("height", height);
-
-// const container = svg.append("g");
-
-// const zoom = d3.zoom()
-//     .scaleExtent([0.5, 10])
-//     .on("zoom", (event) => {
-//         container.attr("transform", event.transform);
-//     });
-
-// svg.call(zoom);
-
 let visibleCells = {};  // Object to store the state of each visible cell
+// Initialize a variable to store the current transformation.
+let currentTransform = d3.zoomIdentity;
+
 
 const canvas = document.getElementById('mazeCanvas');
 const context = canvas.getContext('2d');
-const cellSize = 10;
+const cellSize = 8;
 const gridSize = 600;
 
+// Create an off-screen canvas
+const offScreenCanvas = document.createElement('canvas');
+offScreenCanvas.width = canvas.width;  // 'canvas' is the on-screen canvas
+offScreenCanvas.height = canvas.height;
+const offCtx = offScreenCanvas.getContext('2d');
+
 const d3Canvas = d3.select(canvas);
+
 const zoom = d3.zoom()
     .scaleExtent([0.5, 10])
     .on("zoom", (event) => {
-        context.save();
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.translate(event.transform.x, event.transform.y);
-        context.scale(event.transform.k, event.transform.k);
-        drawGrid(); // Redraw the grid with new transformations
-        context.restore();
+        currentTransform = event.transform;
+        redrawCanvas();
     });
 
 d3Canvas.call(zoom);
 
-// export function drawGrid() {
-//     const centerX = 300;
-//     const centerY = 300;
-//     const halfSize = 10;
-
-//     for (let i = 0; i < gridSize; i++) {
-//         for (let j = 0; j < gridSize; j++) {
-//             const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? COLORS.DUTYFREE : COLORS.UNREVEALED;
-
-//             container.append("rect")
-//                 .attr("x", i * cellSize)
-//                 .attr("y", j * cellSize)
-//                 .attr("width", cellSize)
-//                 .attr("height", cellSize)
-//                 .attr("stroke", "black")
-//                 .attr("stroke-width", 0.25)
-//                 .attr("fill", fillColor)
-//                 .attr("diggable", "false")
-//                 .attr("revealed", "false")
-//                 .attr("movements", "0")
-//                 .attr("border-drawn", "false")
-//                 .attr("coord-x", i)
-//                 .attr("coord-y", j)
-//                 .on("click", () => {
-//                     const rect = container.select(`rect[coord-x="${i}"][coord-y="${j}"]`);
-//                     const revealed = rect.attr("revealed");
-//                     const diggable = rect.attr("diggable");
-//                     const movements = rect.attr("movements");
-
-//                     document.getElementById('cell-info').innerHTML = `Position: (${i}, ${j})<br>Revealed: ${revealed}<br>Diggable: ${diggable}<br>Movements: ${movements}`;
-//                 });
-//         }
-//     }
-// }
-
+function redrawCanvas() {
+    context.save();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.translate(currentTransform.x, currentTransform.y);
+    context.scale(currentTransform.k, currentTransform.k);
+    drawGrid();
+    // Ensure visible cells are redrawn if they are managed separately
+    Object.keys(visibleCells).forEach(key => {
+        const [x, y] = key.split(',').map(Number);
+        redrawCell(x, y);
+    });
+    context.restore();
+}
 
 export function drawGrid() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -85,6 +50,7 @@ export function drawGrid() {
             context.fillStyle = COLORS.UNREVEALED;
             context.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
             context.strokeStyle = COLORS.GRID;
+            context.lineWidth = 1;
             context.strokeRect(i * cellSize, j * cellSize, cellSize, cellSize);
         }
     }
@@ -103,67 +69,6 @@ let heatColor = (movements) => {
 
 };
 
-// export function drawVisible(visibleCell) {
-//     let { x, y, directions, diggable, movements } = visibleCell;
-//     const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
-
-//     rect.attr("revealed", "true");
-//     rect.attr("diggable", diggable.toString());
-
-//     if (!movements) {
-//         movements = parseInt(rect.attr("movements"));
-//     }
-
-//     if (movements > 0) {
-//         rect.attr("fill", heatColor(movements));
-//         rect.attr("movements", movements.toString());
-//     } else {
-//         rect.attr("fill", diggable ? COLORS.DIGGABLE : COLORS.REVEALED);
-//     }
-
-//     const borders = CELL_TYPE[directions];
-
-//     if (borders) {
-//         if (borders.left) {
-//             container.append("line")
-//                 .attr("x1", x * cellSize)
-//                 .attr("y1", y * cellSize)
-//                 .attr("x2", x * cellSize)
-//                 .attr("y2", y * cellSize + cellSize)
-//                 .attr("stroke", COLORS.WALLS)
-//                 .attr("stroke-width", 0.5);
-//         }
-//         if (borders.top) {
-//             container.append("line")
-//                 .attr("x1", x * cellSize)
-//                 .attr("y1", y * cellSize)
-//                 .attr("x2", x * cellSize + cellSize)
-//                 .attr("y2", y * cellSize)
-//                 .attr("stroke", COLORS.WALLS)
-//                 .attr("stroke-width", 0.5);
-//         }
-//         if (borders.right) {
-//             container.append("line")
-//                 .attr("x1", x * cellSize + cellSize)
-//                 .attr("y1", y * cellSize)
-//                 .attr("x2", x * cellSize + cellSize)
-//                 .attr("y2", y * cellSize + cellSize)
-//                 .attr("stroke", COLORS.WALLS)
-//                 .attr("stroke-width", 0.5);
-//         }
-//         if (borders.bottom) {
-//             container.append("line")
-//                 .attr("x1", x * cellSize)
-//                 .attr("y1", y * cellSize + cellSize)
-//                 .attr("x2", x * cellSize + cellSize)
-//                 .attr("y2", y * cellSize + cellSize)
-//                 .attr("stroke", COLORS.WALLS)
-//                 .attr("stroke-width", 0.5);
-//         }
-//     }
-//     rect.attr("border-drawn", "true");
-// }
-
 
 export function drawVisible(visibleCell) {
     const { x, y, directions, diggable, movements } = visibleCell;
@@ -181,6 +86,7 @@ function redrawCell(x, y) {
     context.fillStyle = heatColor(movements);
     context.fillRect(canvasX, canvasY, cellSize, cellSize);
     context.strokeStyle = COLORS.GRID;
+    context.lineWidth = 1;
     context.strokeRect(canvasX, canvasY, cellSize, cellSize);
 
     drawBorders(canvasX, canvasY, directions);
@@ -188,7 +94,7 @@ function redrawCell(x, y) {
 
 function drawBorders(canvasX, canvasY, directions) {
     context.strokeStyle = COLORS.WALLS;
-    context.lineWidth = 2;
+    context.lineWidth = 1.5;
     const borders = CELL_TYPE[directions];
     if (borders) {
         if (borders.left) {
@@ -265,11 +171,16 @@ export function changeCave(caveId) {
     loadCaveData(caveId);
 }
 
-export function centerOnSheep(x, y) {
-    const currentTransform = d3.zoomTransform(svg.node());
-    const scale = currentTransform.k;
-    const translateX = width / 2 - x * cellSize * scale;
-    const translateY = height / 2 - y * cellSize * scale;
-    const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-    svg.transition().duration(750).call(zoom.transform, transform);
+export function centerOn(x, y) {
+    // Calculate the new translation based on the sheep's position.
+    const translateX = (canvas.width / 2) - (x * cellSize * currentTransform.k);
+    const translateY = (canvas.height / 2) - (y * cellSize * currentTransform.k);
+
+    // Update the current transform with the new translation while keeping the current scale.
+    currentTransform = d3.zoomIdentity.translate(translateX, translateY).scale(currentTransform.k);
+
+    // Smoothly transition to the new center position.
+    d3.select(canvas).transition()
+        .duration(750)
+        .call(zoom.transform, currentTransform);
 }
