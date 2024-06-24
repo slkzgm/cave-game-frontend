@@ -87,6 +87,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function formatResult(result) {
+            const explanation = `
+                <h4>Calculation Explanation:</h4>
+                <p>
+                    The gold estimation is calculated as follows:
+                    <ol>
+                        <li>Total number of CRACKED caves is retrieved.</li>
+                        <li>450,000 golds are divided by the total number of CRACKED caves to get the golds per cave that reaches 100% looted.</li>
+                        <li>For each cave, the percentage looted is used to determine the golds allocated to the cave.</li>
+                        <li>The leaderboard for each cave is retrieved.</li>
+                        <li>For each player in the leaderboard, the golds allocated to the cave are multiplied by the player's share percentage in that cave.</li>
+                    </ol>
+                </p>
+                <p>
+                    Mathematical formula:
+                    <br>
+                    <strong>Total Golds Allocated to a Player in a Cave = (Golds per 100% Cave) * (% Looted / 100) * (Player's Share / 100)</strong>
+                </p>
+                <p>
+                    For example, if there are 100 caves, each cave will have up to 4,500 golds if it reaches 100%. If a cave is 50% looted, then 2,250 golds are distributed. If a player in this cave has 10% of the shares, then they will receive 225 golds for that cave.
+                </p>
+            `;
+
             let html = `<h3>Total Gold: ${result.total.toFixed(2)}</h3>`;
             html += `<table><tr><th>Cave ID</th><th>Points</th><th>Gold</th></tr>`;
             for (const caveId in result.details) {
@@ -94,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<tr><td>${caveId}</td><td>${detail.pts}</td><td>${detail.gold.toFixed(2)}</td></tr>`;
             }
             html += `</table>`;
+            html += explanation;
             return html;
         }
     });
