@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.querySelector('.tab-button:nth-child(8)').addEventListener('click', () => {
         showTab('tab5');
-        
+
         const goldEstimationForm = document.getElementById('gold-estimation-form');
         goldEstimationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -80,10 +80,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Network response was not ok');
                 }
                 const result = await response.json();
-                resultContainer.innerHTML = `<h3>Total Gold: ${result.total}</h3><pre>${JSON.stringify(result.details, null, 2)}</pre>`;
+                resultContainer.innerHTML = formatResult(result);
             } catch (error) {
                 resultContainer.innerHTML = `Error: ${error.message}`;
             }
         });
+
+        function formatResult(result) {
+            let html = `<h3>Total Gold: ${result.total.toFixed(2)}</h3>`;
+            html += `<table><tr><th>Cave ID</th><th>Points</th><th>Gold</th></tr>`;
+            for (const caveId in result.details) {
+                const detail = result.details[caveId];
+                html += `<tr><td>${caveId}</td><td>${detail.pts}</td><td>${detail.gold.toFixed(2)}</td></tr>`;
+            }
+            html += `</table>`;
+            return html;
+        }
     });
 });

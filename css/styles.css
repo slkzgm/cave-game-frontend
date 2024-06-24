@@ -138,3 +138,31 @@ svg {
 #cave-details-box ul {
     margin: 10px 0;
 }
+
+#gold-estimation-result {
+    margin-top: 20px;
+}
+
+#gold-estimation-result table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#gold-estimation-result th, #gold-estimation-result td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#gold-estimation-result th {
+    background-color: #f2f2f2;
+}
+
+#gold-estimation-result tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#gold-estimation-result tr:hover {
+    background-color: #ddd;
+}
