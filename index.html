@@ -13,6 +13,7 @@
     <button class="tab-button">Get Extension</button>
     <button class="tab-button">Join Discord</button>
     <button class="tab-button">X Alerts</button>
+    <button class="tab-button">Gold Estimation</button>
 </div>
 <div id="tab1" class="tab-content active">
     <div id="map">
@@ -89,6 +90,14 @@
     <div class="refresh-button">
         <button onclick="fetchLastCaveDetails()">Refresh Data</button>
     </div>
+</div>
+<div id="tab5" class="tab-content">
+    <h2>Gold Estimation</h2>
+    <form id="gold-estimation-form">
+        <input type="text" id="twitter-handle" placeholder="Enter Twitter Handle" required />
+        <button type="submit">Get Estimation</button>
+    </form>
+    <div id="gold-estimation-result"></div>
 </div>
 <script src="https://d3js.org/d3.v6.min.js"></script>
 <script type="module" src="js/main.js"></script>

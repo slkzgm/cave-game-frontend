@@ -1,4 +1,4 @@
-import { drawGrid, changeCave, centerOnSheep } from './grid.js';
+import { changeCave, centerOnSheep } from './grid.js';
 import { connectWebSocket } from './websocket.js';
 import {
     loadColors,
@@ -63,5 +63,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.querySelector('.tab-button:nth-child(7)').addEventListener('click', () => {
         window.open('https://x.com/cavegamebot', '_blank');
+    });
+    document.querySelector('.tab-button:nth-child(8)').addEventListener('click', () => {
+        showTab('tab5');
+        
+        const goldEstimationForm = document.getElementById('gold-estimation-form');
+        goldEstimationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const twitterHandle = document.getElementById('twitter-handle').value;
+            const resultContainer = document.getElementById('gold-estimation-result');
+            resultContainer.innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch(`https://cavegame.slkzgm.com/estimateGold/${twitterHandle}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const result = await response.json();
+                resultContainer.innerHTML = `<h3>Total Gold: ${result.total}</h3><pre>${JSON.stringify(result.details, null, 2)}</pre>`;
+            } catch (error) {
+                resultContainer.innerHTML = `Error: ${error.message}`;
+            }
+        });
     });
 });
