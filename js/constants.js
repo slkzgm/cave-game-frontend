@@ -2,7 +2,7 @@ export const BACKEND_URL = 'cavegame.slkzgm.com';
 
 export const COLORS = {
     UNREVEALED: "#999",
-    REVEALED: "#fff",
+    REVEALED: "#ccc",
     ACTUAL: "#fff",
     DIGGABLE: "#00fff7",
     DIGGED: "#0050b7",

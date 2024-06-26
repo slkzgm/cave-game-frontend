@@ -1,4 +1,4 @@
-import { drawGrid, changeCave, centerOn } from './grid.js';
+import { drawGrid, changeCave, centerOn, drawSheep } from './grid.js';
 import { connectWebSocket } from './websocket.js';
 import {
     // loadColors,

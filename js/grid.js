@@ -11,7 +11,6 @@ canvas.width = cellSize * gridSize;
 canvas.height = cellSize * gridSize;
 const context = canvas.getContext('2d');
 
-
 // Create an off-screen canvas
 const offScreenCanvas = document.createElement('canvas');
 offScreenCanvas.width = canvas.width;  // 'canvas' is the on-screen canvas
@@ -188,9 +187,25 @@ export function processAndRenderData(data) {
 
     setSheepData(sheepData);
     toDraw.forEach(drawVisible);
-    updateSheepSelector();
     drawGrid();  // Update the off-screen canvas after processing new data
+    updateSheepSelector();
     redrawCanvas();
+}
+
+export function drawSheep(x,y){
+    const canvasX = x * cellSize;
+    const canvasY = y * cellSize;
+    offCtx.fillStyle = COLORS.ACTUAL;
+    offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
+    console.log("current sheep here:", canvasX, canvasY);
+
+    // var img = new Image();   // Create a new image object
+    // img.src = 'favicon.ico';  // Set the source of the image
+    // img.onload = function() {
+    //     // Draw the image on the canvas at the desired coordinates
+    //     console.log("draw image here:", x, y);
+    //     offCtx.drawImage(img, canvasX + 1, canvasY + 1, 6, 6);  
+    // };
 }
 
 export function loadCaveData(caveId) {

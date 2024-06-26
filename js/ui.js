@@ -1,5 +1,5 @@
 import { COLORS } from './constants.js';
-import { drawGrid, loadCaveData } from './grid.js';
+import { drawGrid, loadCaveData, drawSheep, centerOn } from './grid.js';
 import { getCurrentCaveData, setCurrentCaveData, getSheepData, getCurrentCaveId } from './state.js';
 import { BACKEND_URL } from './constants.js';
 
@@ -203,7 +203,10 @@ export function updateSheepSelector() {
         const { coordinates: { x, y } } = sheepData[sheepId];
         const option = document.createElement('option');
 
-        d3.select(`rect[coord-x="${x}"][coord-y="${y}"]`).attr("fill", COLORS.ACTUAL);
+        drawSheep(x,y);
+        centerOn(x,y, 0.8)
+
+        // d3.select(`rect[coord-x="${x}"][coord-y="${y}"]`).attr("fill", COLORS.ACTUAL);
         option.value = sheepId;
         option.textContent = `Sheep ${sheepId} (x: ${x}, y: ${y})`;
         sheepSelector.appendChild(option);
