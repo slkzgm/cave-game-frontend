@@ -18,6 +18,7 @@
     </div>
     <div id="tab1" class="tab-content active">
         <div id="map">
+            <canvas id="mazeCanvas"></canvas>
             <div id="info-box">
                 <p id="cell-info">Click on a cell to get infos</p>
             </div>
@@ -30,40 +31,6 @@
                 <p id="current-cave">Current Cave: No Cave Selected</p>
                 <input type="number" id="cave-number" placeholder="Enter cave number" />
                 <button id="cave-btn">Load Cave</button>
-            </div>
-            <canvas id="mazeCanvas" width="800" height="800"></canvas>
-
-            <div id="color-controls">
-                <div class="color-input">
-                    <label for="color-unrevealed">Unrevealed:</label>
-                    <input type="color" id="color-unrevealed">
-                </div>
-                <div class="color-input">
-                    <label for="color-revealed">Revealed:</label>
-                    <input type="color" id="color-revealed">
-                </div>
-                <div class="color-input">
-                    <label for="color-actual">Actual:</label>
-                    <input type="color" id="color-actual">
-                </div>
-                <div class="color-input">
-                    <label for="color-diggable">Diggable:</label>
-                    <input type="color" id="color-diggable">
-                </div>
-                <div class="color-input">
-                    <label for="color-digged">Digged:</label>
-                    <input type="color" id="color-digged">
-                </div>
-                <div class="color-input">
-                    <label for="color-walls">Walls:</label>
-                    <input type="color" id="color-walls">
-                </div>
-                <div class="color-input">
-                    <label for="color-dutyfree">Duty-Free:</label>
-                    <input type="color" id="color-dutyfree">
-                </div>
-                <button id="apply-colors-btn">Apply Colors</button>
-                <button id="reset-colors-btn">Reset Colors</button>
             </div>
         </div>
         <div id="controls">

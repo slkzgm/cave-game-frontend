@@ -1,9 +1,9 @@
 import { drawGrid, changeCave, centerOn } from './grid.js';
 import { connectWebSocket } from './websocket.js';
 import {
-    loadColors,
-    applyColors,
-    resetColors,
+    // loadColors,
+    // applyColors,
+    // resetColors,
     displayActualCaveDetails,
     fetchAvailableCaves,
     fetchLastCaveDetails,
@@ -12,8 +12,6 @@ import {
 import { getSheepData } from './state.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadColors();
-    // drawGrid();
 
     if (!window.socket) {
         connectWebSocket();
@@ -30,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sheepId) {
             const sheepData = getSheepData();
             const { coordinates: { x, y } } = sheepData[sheepId];
-            centerOn(x, y);
+            centerOn(x, y, 0.8);
         }
     });
 
@@ -38,9 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const caveId = parseInt(document.getElementById('cave-number').value);
         changeCave(caveId);
     });
-
-    document.getElementById('apply-colors-btn').addEventListener('click', applyColors);
-    document.getElementById('reset-colors-btn').addEventListener('click', resetColors);
 
     document.querySelector('.tab-button:nth-child(1)').addEventListener('click', () => showTab('tab1'));
     document.querySelector('.tab-button:nth-child(2)').addEventListener('click', () => {

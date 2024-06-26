@@ -1,140 +1,148 @@
 #map {
-    height: 800px;
-    width: 800px;
-    margin: auto;
-    position: relative;
+  overflow: hidden;
+  position: relative;
+  width: 800px;
+  height: 100vh;
+  margin: auto;
+  border: 5px solid red;
+}
+
+canvas {
+  /* max-width: 100%;
+  max-height: 100%; */
+  border: 2px solid blue;
 }
 #controls {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 20px;
 }
 #info-box {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: white;
-    padding: 10px;
-    border: 1px solid #ccc;
-    z-index: 1000;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  z-index: 1000;
 }
 #sheep-selector-box {
-    position: absolute;
-    top: 120px;
-    right: 10px;
-    background: white;
-    padding: 10px;
-    border: 1px solid #ccc;
-    z-index: 1000;
+  position: absolute;
+  top: 120px;
+  right: 10px;
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  z-index: 1000;
 }
 #cave-selector-box {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: white;
-    padding: 10px;
-    border: 1px solid #ccc;
-    z-index: 1000;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  z-index: 1000;
 }
 #color-controls {
-    position: absolute;
-    top: 200px;
-    left: 10px;
-    background: white;
-    padding: 10px;
-    border: 1px solid #ccc;
-    z-index: 1000;
+  position: absolute;
+  top: 200px;
+  left: 10px;
+  background: white;
+  padding: 10px;
+  border: 1px solid #ccc;
+  z-index: 1000;
 }
 .color-input {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
-svg {
-    display: block;
-}
+
 .tab-buttons {
-    text-align: center;
-    margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 20px;
 }
 .tab-content {
-    display: none;
+  display: none;
 }
 .tab-content.active {
-    display: block;
+  display: block;
 }
 #details-container {
-    height: 800px;
-    width: 800px;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: left;
-    background: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  height: 800px;
+  width: 800px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  background: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 #details-box {
-    width: 100%;
-    max-height: 100%;
-    overflow-y: auto;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
 }
-#details-box h2, #details-box h3 {
-    text-align: center;
+#details-box h2,
+#details-box h3 {
+  text-align: center;
 }
-#details-box p, #details-box ul {
-    margin: 10px 0;
+#details-box p,
+#details-box ul {
+  margin: 10px 0;
 }
 .info-group {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 .info-group p {
-    flex: 1;
-    margin: 0 10px;
+  flex: 1;
+  margin: 0 10px;
 }
 .info-group p:first-child {
-    margin-left: 0;
+  margin-left: 0;
 }
 .info-group p:last-child {
-    margin-right: 0;
+  margin-right: 0;
 }
 .refresh-button {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 #actual-cave-container,
 #cave-details-container {
-    height: 800px;
-    width: 800px;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: left;
-    background: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  height: 800px;
+  width: 800px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  background: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 #actual-cave-box,
 #cave-details-box {
-    width: 100%;
-    max-height: 100%;
-    overflow-y: auto;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
 }
 
 #actual-cave-box h2,
 #actual-cave-box h3,
 #cave-details-box h2,
 #cave-details-box h3 {
-    text-align: center;
+  text-align: center;
 }
 
 #actual-cave-box p,
 #actual-cave-box ul,
 #cave-details-box p,
 #cave-details-box ul {
-    margin: 10px 0;
+  margin: 10px 0;
 }
