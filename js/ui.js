@@ -1,73 +1,73 @@
 import { COLORS } from './constants.js';
-import { drawGrid, loadCaveData } from './grid.js';
+import { drawGrid, loadCaveData, drawSheep, centerOn } from './grid.js';
 import { getCurrentCaveData, setCurrentCaveData, getSheepData, getCurrentCaveId } from './state.js';
 import { BACKEND_URL } from './constants.js';
 
-export function loadColors() {
-    const savedColors = JSON.parse(localStorage.getItem('colors'));
-    if (savedColors) {
-        Object.assign(COLORS, savedColors);
-    }
-    document.getElementById('color-unrevealed').value = COLORS.UNREVEALED;
-    document.getElementById('color-revealed').value = COLORS.REVEALED;
-    document.getElementById('color-actual').value = COLORS.ACTUAL;
-    document.getElementById('color-diggable').value = COLORS.DIGGABLE;
-    document.getElementById('color-digged').value = COLORS.DIGGED;
-    document.getElementById('color-walls').value = COLORS.WALLS;
-    document.getElementById('color-dutyfree').value = COLORS.DUTYFREE;
-}
+// export function loadColors() {
+//     const savedColors = JSON.parse(localStorage.getItem('colors'));
+//     if (savedColors) {
+//         Object.assign(COLORS, savedColors);
+//     }
+//     document.getElementById('color-unrevealed').value = COLORS.UNREVEALED;
+//     document.getElementById('color-revealed').value = COLORS.REVEALED;
+//     document.getElementById('color-actual').value = COLORS.ACTUAL;
+//     document.getElementById('color-diggable').value = COLORS.DIGGABLE;
+//     document.getElementById('color-digged').value = COLORS.DIGGED;
+//     document.getElementById('color-walls').value = COLORS.WALLS;
+//     document.getElementById('color-dutyfree').value = COLORS.DUTYFREE;
+// }
 
-export function saveColors() {
-    localStorage.setItem('colors', JSON.stringify(COLORS));
-}
+// export function saveColors() {
+//     localStorage.setItem('colors', JSON.stringify(COLORS));
+// }
 
-export function applyColors() {
-    COLORS.UNREVEALED = document.getElementById('color-unrevealed').value;
-    COLORS.REVEALED = document.getElementById('color-revealed').value;
-    COLORS.ACTUAL = document.getElementById('color-actual').value;
-    COLORS.DIGGABLE = document.getElementById('color-diggable').value;
-    COLORS.DIGGED = document.getElementById('color-digged').value;
-    COLORS.WALLS = document.getElementById('color-walls').value;
-    COLORS.DUTYFREE = document.getElementById('color-dutyfree').value;
+// export function applyColors() {
+//     COLORS.UNREVEALED = document.getElementById('color-unrevealed').value;
+//     COLORS.REVEALED = document.getElementById('color-revealed').value;
+//     COLORS.ACTUAL = document.getElementById('color-actual').value;
+//     COLORS.DIGGABLE = document.getElementById('color-diggable').value;
+//     COLORS.DIGGED = document.getElementById('color-digged').value;
+//     COLORS.WALLS = document.getElementById('color-walls').value;
+//     COLORS.DUTYFREE = document.getElementById('color-dutyfree').value;
 
-    saveColors();
+//     saveColors();
 
-    const container = d3.select("#map").select("svg").select("g");
-    container.selectAll("rect").remove();
-    drawGrid();
-    if (getCurrentCaveId()) {
-        loadCaveData(getCurrentCaveId());
-    }
-}
+//     const container = d3.select("#map").select("svg").select("g");
+//     container.selectAll("rect").remove();
+//     drawGrid();
+//     if (getCurrentCaveId()) {
+//         loadCaveData(getCurrentCaveId());
+//     }
+// }
 
-export function resetColors() {
-    Object.assign(COLORS, {
-        UNREVEALED: "#333333",
-        REVEALED: "#cccccc",
-        ACTUAL: "#ffffff",
-        DIGGABLE: "#00fff7",
-        DIGGED: "#0050b7",
-        WALLS: "#ff0000",
-        DUTYFREE: "#956565"
-    });
+// export function resetColors() {
+//     Object.assign(COLORS, {
+//         UNREVEALED: "#333333",
+//         REVEALED: "#cccccc",
+//         ACTUAL: "#ffffff",
+//         DIGGABLE: "#00fff7",
+//         DIGGED: "#0050b7",
+//         WALLS: "#ff0000",
+//         DUTYFREE: "#956565"
+//     });
 
-    document.getElementById('color-unrevealed').value = COLORS.UNREVEALED;
-    document.getElementById('color-revealed').value = COLORS.REVEALED;
-    document.getElementById('color-actual').value = COLORS.ACTUAL;
-    document.getElementById('color-diggable').value = COLORS.DIGGABLE;
-    document.getElementById('color-digged').value = COLORS.DIGGED;
-    document.getElementById('color-walls').value = COLORS.WALLS;
-    document.getElementById('color-dutyfree').value = COLORS.DUTYFREE;
+//     document.getElementById('color-unrevealed').value = COLORS.UNREVEALED;
+//     document.getElementById('color-revealed').value = COLORS.REVEALED;
+//     document.getElementById('color-actual').value = COLORS.ACTUAL;
+//     document.getElementById('color-diggable').value = COLORS.DIGGABLE;
+//     document.getElementById('color-digged').value = COLORS.DIGGED;
+//     document.getElementById('color-walls').value = COLORS.WALLS;
+//     document.getElementById('color-dutyfree').value = COLORS.DUTYFREE;
 
-    saveColors();
+//     saveColors();
 
-    const container = d3.select("#map").select("svg").select("g");
-    container.selectAll("rect").remove();
-    drawGrid();
-    if (getCurrentCaveId()) {
-        loadCaveData(getCurrentCaveId());
-    }
-}
+//     const container = d3.select("#map").select("svg").select("g");
+//     container.selectAll("rect").remove();
+//     drawGrid();
+//     if (getCurrentCaveId()) {
+//         loadCaveData(getCurrentCaveId());
+//     }
+// }
 
 export async function fetchLastCaveDetails() {
     try {
@@ -203,7 +203,10 @@ export function updateSheepSelector() {
         const { coordinates: { x, y } } = sheepData[sheepId];
         const option = document.createElement('option');
 
-        d3.select(`rect[coord-x="${x}"][coord-y="${y}"]`).attr("fill", COLORS.ACTUAL);
+        drawSheep(x,y);
+        centerOn(x,y, 0.8)
+
+        // d3.select(`rect[coord-x="${x}"][coord-y="${y}"]`).attr("fill", COLORS.ACTUAL);
         option.value = sheepId;
         option.textContent = `Sheep ${sheepId} (x: ${x}, y: ${y})`;
         sheepSelector.appendChild(option);

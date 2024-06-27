@@ -2,146 +2,210 @@ import { COLORS, CELL_TYPE, BACKEND_URL } from './constants.js';
 import { updateSheepSelector, updateCaveDetails } from './ui.js';
 import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
 
-const width = 800;
-const height = 800;
-const cellSize = 2;
+let visibleCells = {};  // Object to store the state of each visible cell
+
+const canvas = document.getElementById('mazeCanvas');
+const cellSize = 8;
 const gridSize = 600;
+canvas.width = cellSize * gridSize;
+canvas.height = cellSize * gridSize;
+const context = canvas.getContext('2d');
 
-const svg = d3.select("#map").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+// Create an off-screen canvas
+const offScreenCanvas = document.createElement('canvas');
+offScreenCanvas.width = canvas.width;  // 'canvas' is the on-screen canvas
+offScreenCanvas.height = canvas.height;
+const offCtx = offScreenCanvas.getContext('2d');
 
-const container = svg.append("g");
+let zoomLevel = 0.5;
+let offsetX = 0, offsetY = 0;
+let isDragging = false;
+let startDragOffset = {};
 
-const zoom = d3.zoom()
-    .scaleExtent([0.5, 10])
-    .on("zoom", (event) => {
-        container.attr("transform", event.transform);
-    });
+canvas.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    startDragOffset.x = e.clientX - offsetX;
+    startDragOffset.y = e.clientY - offsetY;
+});
 
-svg.call(zoom);
+canvas.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+        offsetX = e.clientX - startDragOffset.x;
+        offsetY = e.clientY - startDragOffset.y;
+        redrawCanvas();
+    }
+});
 
+canvas.addEventListener('mouseup', function(e) {
+    isDragging = false;
+});
+
+canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const oldZoom = zoomLevel;
+    const delta = e.deltaY * -0.01;
+    zoomLevel += delta;
+    zoomLevel = Math.max(0.1, Math.min(zoomLevel, 10)); // Clamp the zoom level
+
+    console.log("zoom level:", zoomLevel);
+
+    // Calculate the new offset to keep the mouse position as the center of zoom
+    offsetX -= (mouseX - offsetX) * (zoomLevel - oldZoom) / oldZoom;
+    offsetY -= (mouseY - offsetY) * (zoomLevel - oldZoom) / oldZoom;
+
+    redrawCanvas();
+});
+
+
+
+// copy the pre-rendered off-screen canvas to the visible canvas
+function redrawCanvas() {
+    console.log("offsetX and offsetY:", offsetX, offsetY);
+    console.log("zoomLevel:", zoomLevel);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.translate(offsetX, offsetY);
+    context.scale(zoomLevel, zoomLevel);
+    context.drawImage(offScreenCanvas, 0, 0);
+    context.restore();
+    console.log("redrawCanvas ends!");
+}
+
+
+
+// draw grid on off-canvas
 export function drawGrid() {
-    const centerX = 300;
-    const centerY = 300;
-    const halfSize = 10;
-
+    offCtx.clearRect(0, 0, offScreenCanvas.width, offScreenCanvas.height);
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
-            const fillColor = (i >= centerX - halfSize && i < centerX + halfSize && j >= centerY - halfSize && j < centerY + halfSize) ? COLORS.DUTYFREE : COLORS.UNREVEALED;
-
-            container.append("rect")
-                .attr("x", i * cellSize)
-                .attr("y", j * cellSize)
-                .attr("width", cellSize)
-                .attr("height", cellSize)
-                .attr("stroke", "black")
-                .attr("stroke-width", 0.25)
-                .attr("fill", fillColor)
-                .attr("diggable", "false")
-                .attr("revealed", "false")
-                .attr("movements", "0")
-                .attr("border-drawn", "false")
-                .attr("coord-x", i)
-                .attr("coord-y", j)
-                .on("click", () => {
-                    const rect = container.select(`rect[coord-x="${i}"][coord-y="${j}"]`);
-                    const revealed = rect.attr("revealed");
-                    const diggable = rect.attr("diggable");
-                    const movements = rect.attr("movements");
-
-                    document.getElementById('cell-info').innerHTML = `Position: (${i}, ${j})<br>Revealed: ${revealed}<br>Diggable: ${diggable}<br>Movements: ${movements}`;
-                });
+            offCtx.fillStyle = COLORS.UNREVEALED;
+            offCtx.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+            offCtx.strokeStyle = COLORS.GRID;
+            offCtx.lineWidth = 1;
+            offCtx.strokeRect(i * cellSize, j * cellSize, cellSize, cellSize);
         }
     }
+    // Redraw each visible cell stored in the dictionary
+    Object.keys(visibleCells).forEach(key => {
+        const [x, y] = key.split(',').map(Number);
+        redrawCell(x, y); // Pass correct arguments
+    });
 }
+
 
 let heatColor = (movements) => {
     if (movements === 1) return 'green';
     if (movements <= 3) return 'yellow';
     if (movements <= 8) return 'orange';
     if (movements > 8) return 'red';
+    return '#fff';  // Default color
 };
 
+
 export function drawVisible(visibleCell) {
-    let { x, y, directions, diggable, movements } = visibleCell;
-    const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
-
-    rect.attr("revealed", "true");
-    rect.attr("diggable", diggable.toString());
-
-    if (!movements) {
-        movements = parseInt(rect.attr("movements"));
+    if (!visibleCell || !visibleCell.x || !visibleCell.y || !visibleCell.directions) {
+        console.error("Invalid cell data", visibleCell);
+        return; // Skip drawing this cell to avoid errors
     }
+    const { x, y, directions, diggable, movements } = visibleCell;
+    visibleCells[`${x},${y}`] = visibleCell;  // Store cell state keyed by its coordinates
+    redrawCell(x, y);
+}
 
-    if (movements > 0) {
-        rect.attr("fill", heatColor(movements));
-        rect.attr("movements", movements.toString());
-    } else {
-        rect.attr("fill", diggable ? COLORS.DIGGABLE : COLORS.REVEALED);
+function redrawCell(x, y) {
+    const visibleCell = visibleCells[`${x},${y}`];
+    if (!visibleCell) {
+        console.error("No data available for cell:", x, y);
+        return; // Exit if no data is found
     }
+    const { directions, movements } = visibleCell;
+    const canvasX = x * cellSize;
+    const canvasY = y * cellSize;
 
+    offCtx.fillStyle = heatColor(movements);
+    offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
+    offCtx.strokeStyle = COLORS.GRID;
+    offCtx.lineWidth = 1;
+    offCtx.strokeRect(canvasX, canvasY, cellSize, cellSize);
+
+    drawBorders(offCtx, canvasX, canvasY, directions);
+}
+
+function drawBorders(ctx, canvasX, canvasY, directions) {
+    ctx.strokeStyle = COLORS.WALLS;
+    ctx.lineWidth = 2;
     const borders = CELL_TYPE[directions];
-
     if (borders) {
         if (borders.left) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            ctx.beginPath();
+            ctx.moveTo(canvasX, canvasY);
+            ctx.lineTo(canvasX, canvasY + cellSize);
+            ctx.stroke();
         }
         if (borders.top) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            ctx.beginPath();
+            ctx.moveTo(canvasX, canvasY);
+            ctx.lineTo(canvasX + cellSize, canvasY);
+            ctx.stroke();
         }
         if (borders.right) {
-            container.append("line")
-                .attr("x1", x * cellSize + cellSize)
-                .attr("y1", y * cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            ctx.beginPath();
+            ctx.moveTo(canvasX + cellSize, canvasY);
+            ctx.lineTo(canvasX + cellSize, canvasY + cellSize);
+            ctx.stroke();
         }
         if (borders.bottom) {
-            container.append("line")
-                .attr("x1", x * cellSize)
-                .attr("y1", y * cellSize + cellSize)
-                .attr("x2", x * cellSize + cellSize)
-                .attr("y2", y * cellSize + cellSize)
-                .attr("stroke", COLORS.WALLS)
-                .attr("stroke-width", 0.5);
+            ctx.beginPath();
+            ctx.moveTo(canvasX, canvasY + cellSize);
+            ctx.lineTo(canvasX + cellSize, canvasY + cellSize);
+            ctx.stroke();
         }
     }
-    rect.attr("border-drawn", "true");
 }
 
 export function processAndRenderData(data) {
     const sheepData = getSheepData();
     const toDraw = Object.values(data.reduce((acc, currentObj) => {
         const { sheepId, totalSteps, coordinates: { x, y }} = currentObj;
-        const rect = container.select(`rect[coord-x="${x}"][coord-y="${y}"]`);
-
         sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
-        rect.attr("movements", "1");
-
         currentObj.visible.forEach(element => {
-            acc[element.position] = element;
+            if (element && element.x !== undefined && element.y !== undefined && element.directions !== undefined) {
+                const positionKey = `${element.x},${element.y}`;
+                if (!acc[positionKey]) {
+                    acc[positionKey] = {...element, movements: 1}; // Set movements to 1 if it's a new element
+                } 
+            } else {
+                console.error("Missing or invalid data for visible element:", element);
+            }
         });
         return acc;
     }, {}));
 
     setSheepData(sheepData);
     toDraw.forEach(drawVisible);
+    drawGrid();  // Update the off-screen canvas after processing new data
     updateSheepSelector();
+    redrawCanvas();
+}
+
+export function drawSheep(x,y){
+    const canvasX = x * cellSize;
+    const canvasY = y * cellSize;
+    offCtx.fillStyle = COLORS.ACTUAL;
+    offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
+    console.log("current sheep here:", canvasX, canvasY);
+
+    // var img = new Image();   // Create a new image object
+    // img.src = 'favicon.ico';  // Set the source of the image
+    // img.onload = function() {
+    //     // Draw the image on the canvas at the desired coordinates
+    //     console.log("draw image here:", x, y);
+    //     offCtx.drawImage(img, canvasX + 1, canvasY + 1, 6, 6);  
+    // };
 }
 
 export function loadCaveData(caveId) {
@@ -160,17 +224,38 @@ export function loadCaveData(caveId) {
 export function changeCave(caveId) {
     setCurrentCaveId(caveId);
     document.getElementById('current-cave').innerText = `Current Cave: ${caveId}`;
-    container.selectAll("rect").remove();
+    context.clearRect(0, 0, canvas.width, canvas.height);
     setSheepData({});
     drawGrid();
     loadCaveData(caveId);
+    // zoomLevel = 0.2;
+    centerOn(300,300, 0.2);
 }
 
-export function centerOnSheep(x, y) {
-    const currentTransform = d3.zoomTransform(svg.node());
-    const scale = currentTransform.k;
-    const translateX = width / 2 - x * cellSize * scale;
-    const translateY = height / 2 - y * cellSize * scale;
-    const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-    svg.transition().duration(750).call(zoom.transform, transform);
+export function centerOn(x, y, targenZoom) {
+    // console.log("centerOn Start")
+    // console.log("zoomLevel:", zoomLevel);
+
+    // Get the bounding rectangle of the map container
+    const mapDiv = document.getElementById('map');
+    const rect = mapDiv.getBoundingClientRect();
+
+    // Calculate the pixel position of the center of the target cell
+    const targetX = x * cellSize + cellSize / 2;
+    const targetY = y * cellSize + cellSize / 2;
+
+    // Center point of the map container
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Adjust offsets for zoom: The canvas coordinate (targetX, targetY) should be at the center of the viewport (400, 400) of div#map
+    offsetX = (centerX - targetX * targenZoom); // 400 is half of 800, which centers the point in the viewport
+    offsetY = (centerY - targetY * targenZoom);
+
+    zoomLevel = targenZoom;
+
+    // console.log("New offsetX and offsetY calculated to center on cell:", offsetX, offsetY);
+
+    // console.log("centerOn End");
+    redrawCanvas();
 }

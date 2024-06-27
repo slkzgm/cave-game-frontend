@@ -1,105 +1,109 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Cave Game | Interactive Map</title>
     <link rel="stylesheet" type="text/css" href="css/styles.css">
 </head>
+
 <body>
-<div class="tab-buttons">
-    <button class="tab-button">Map View</button>
-    <button class="tab-button">Actual Cave Details</button>
-    <button class="tab-button">Cave Details</button>
-    <button class="tab-button">Last Cave Details</button>
-    <button class="tab-button">Get Extension</button>
-    <button class="tab-button">Join Discord</button>
-    <button class="tab-button">X Alerts</button>
-    <button class="tab-button">Gold Estimation</button>
-</div>
-<div id="tab1" class="tab-content active">
-    <div id="map">
-        <div id="info-box">
-            <p id="cell-info">Click on a cell to get infos</p>
-        </div>
-        <div id="sheep-selector-box">
-            <select id="sheep-selector">
-                <option value="">Select a sheep</option>
-            </select>
-        </div>
-        <div id="cave-selector-box">
-            <p id="current-cave">Current Cave: No Cave Selected</p>
-            <input type="number" id="cave-number" placeholder="Enter cave number" />
-            <button id="cave-btn">Load Cave</button>
-        </div>
-        <div id="color-controls">
-            <div class="color-input">
-                <label for="color-unrevealed">Unrevealed:</label>
-                <input type="color" id="color-unrevealed">
-            </div>
-            <div class="color-input">
-                <label for="color-revealed">Revealed:</label>
-                <input type="color" id="color-revealed">
-            </div>
-            <div class="color-input">
-                <label for="color-actual">Actual:</label>
-                <input type="color" id="color-actual">
-            </div>
-            <div class="color-input">
-                <label for="color-diggable">Diggable:</label>
-                <input type="color" id="color-diggable">
-            </div>
-            <div class="color-input">
-                <label for="color-digged">Digged:</label>
-                <input type="color" id="color-digged">
-            </div>
-            <div class="color-input">
-                <label for="color-walls">Walls:</label>
-                <input type="color" id="color-walls">
-            </div>
-            <div class="color-input">
-                <label for="color-dutyfree">Duty-Free:</label>
-                <input type="color" id="color-dutyfree">
-            </div>
-            <button id="apply-colors-btn">Apply Colors</button>
-            <button id="reset-colors-btn">Reset Colors</button>
-        </div>
+    <div class="tab-buttons">
+        <button class="tab-button">Map View</button>
+        <button class="tab-button">Actual Cave Details</button>
+        <button class="tab-button">Cave Details</button>
+        <button class="tab-button">Last Cave Details</button>
+        <button class="tab-button">Get Extension</button>
+        <button class="tab-button">Join Discord</button>
+        <button class="tab-button">X Alerts</button>
+        <button class="tab-button">Gold Estimation</button>
     </div>
-    <div id="controls">
-        <input type="number" id="x-coord" placeholder="X" />
-        <input type="number" id="y-coord" placeholder="Y" />
-        <button id="center-btn">Center</button>
-    </div>
-</div>
+    <div id="tab1" class="tab-content active">
+        <div id="map">
+            <canvas id="mazeCanvas"></canvas>
+            <div id="info-box">
+                <p id="cell-info">Click on a cell to get infos</p>
+            </div>
+            <div id="sheep-selector-box">
+                <select id="sheep-selector">
+                    <option value="">Select a sheep</option>
+                </select>
+            </div>
+            <div id="cave-selector-box">
+                <p id="current-cave">Current Cave: No Cave Selected</p>
+                <input type="number" id="cave-number" placeholder="Enter cave number" />
+                <button id="cave-btn">Load Cave</button>
+            </div>
+            <!-- <div id="color-controls">
+                <div class="color-input">
+                    <label for="color-unrevealed">Unrevealed:</label>
+                    <input type="color" id="color-unrevealed">
+                </div>
+                <div class="color-input">
+                    <label for="color-revealed">Revealed:</label>
+                    <input type="color" id="color-revealed">
+                </div>
+                <div class="color-input">
+                    <label for="color-actual">Actual:</label>
+                    <input type="color" id="color-actual">
+                </div>
+                <div class="color-input">
+                    <label for="color-diggable">Diggable:</label>
+                    <input type="color" id="color-diggable">
+                </div>
+                <div class="color-input">
+                    <label for="color-digged">Digged:</label>
+                    <input type="color" id="color-digged">
+                </div>
+                <div id="sheep-selector-box">
+                    <select id="sheep-selector">
+                        <option value="">Select a sheep</option>
+                    </select>
+                </div>
+                <div id="cave-selector-box">
+                    <p id="current-cave">Current Cave: No Cave Selected</p>
+                    <input type="number" id="cave-number" placeholder="Enter cave number" />
+                    <button id="cave-btn">Load Cave</button>
+                </div>
+            </div> -->
+            <div id="controls">
+                <input type="number" id="x-coord" placeholder="X" />
+                <input type="number" id="y-coord" placeholder="Y" />
+                <button id="center-btn">Center</button>
+            </div>
+        </div>
 
-<div id="tab2" class="tab-content">
-    <div id="actual-cave-container">
-        <div id="actual-cave-box"></div>
-    </div>
-</div>
+        <div id="tab2" class="tab-content">
+            <div id="actual-cave-container">
+                <div id="actual-cave-box"></div>
+            </div>
+        </div>
 
-<div id="tab3" class="tab-content">
-    <div id="cave-details-container">
-        <select id="cave-selector-dropdown"></select>
-        <div id="caves-box"></div>
-    </div>
-</div>
+        <div id="tab3" class="tab-content">
+            <div id="cave-details-container">
+                <select id="cave-selector-dropdown"></select>
+                <div id="caves-box"></div>
+            </div>
+        </div>
 
-<div id="tab4" class="tab-content">
-    <div id="details-container">
-        <div id="lastcave-box"></div>
+        <div id="tab4" class="tab-content">
+            <div id="details-container">
+                <div id="lastcave-box"></div>
+            </div>
+            <div class="refresh-button">
+                <button onclick="fetchLastCaveDetails()">Refresh Data</button>
+            </div>
+        </div>
     </div>
-    <div class="refresh-button">
-        <button onclick="fetchLastCaveDetails()">Refresh Data</button>
+    <div id="tab5" class="tab-content">
+        <h2>Gold Estimation</h2>
+        <form id="gold-estimation-form">
+            <input type="text" id="twitter-handle" placeholder="Enter Twitter Handle" required />
+            <button type="submit">Get Estimation</button>
+        </form>
+        <div id="gold-estimation-result"></div>
     </div>
-</div>
-<div id="tab5" class="tab-content">
-    <h2>Gold Estimation</h2>
-    <form id="gold-estimation-form">
-        <input type="text" id="twitter-handle" placeholder="Enter Twitter Handle" required />
-        <button type="submit">Get Estimation</button>
-    </form>
-    <div id="gold-estimation-result"></div>
-</div>
-<script src="https://d3js.org/d3.v6.min.js"></script>
-<script type="module" src="js/main.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
+
 </html>
