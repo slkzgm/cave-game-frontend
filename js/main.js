@@ -1,4 +1,4 @@
-import { changeCave, centerOn  } from './grid.js';
+import { changeCave, changeSheep, centerOn  } from './grid.js';
 import { connectWebSocket } from './websocket.js';
 import {
     // loadColors,
@@ -25,11 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('sheep-selector').addEventListener('change', function() {
         const sheepId = this.value;
-        if (sheepId) {
-            const sheepData = getSheepData();
-            const { coordinates: { x, y } } = sheepData[sheepId];
-            centerOn(x, y);
-        }
+        changeSheep(sheepId);
     });
 
     document.getElementById('cave-btn').addEventListener('click', () => {

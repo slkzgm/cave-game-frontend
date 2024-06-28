@@ -1,6 +1,6 @@
 import { COLORS, CELL_TYPE, BACKEND_URL } from './constants.js';
 import { updateSheepSelector, updateCaveDetails } from './ui.js';
-import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
+import { setCurrentCaveId, setSheepData, getSheepData, setCurrentSheepId, getCurrentSheepId } from './state.js';
 
 let visibleCells = {};  // Object to store the state of each visible cell
 
@@ -51,7 +51,7 @@ canvas.addEventListener('wheel', function(e) {
     zoomLevel += delta;
     zoomLevel = Math.max(0.1, Math.min(zoomLevel, 10)); // Clamp the zoom level
 
-    console.log("zoom level:", zoomLevel);
+    // console.log("zoom level:", zoomLevel);
 
     // Calculate the new offset to keep the mouse position as the center of zoom
     offsetX -= (mouseX - offsetX) * (zoomLevel - oldZoom) / oldZoom;
@@ -64,15 +64,15 @@ canvas.addEventListener('wheel', function(e) {
 
 // copy the pre-rendered off-screen canvas to the visible canvas
 function redrawCanvas() {
-    console.log("offsetX and offsetY:", offsetX, offsetY);
-    console.log("zoomLevel:", zoomLevel);
+    // console.log("offsetX and offsetY:", offsetX, offsetY);
+    // console.log("zoomLevel:", zoomLevel);
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
     context.translate(offsetX, offsetY);
     context.scale(zoomLevel, zoomLevel);
     context.drawImage(offScreenCanvas, 0, 0);
     context.restore();
-    console.log("redrawCanvas ends!");
+    // console.log("redrawCanvas ends!");
 }
 
 
@@ -197,7 +197,7 @@ export function drawSheep(x,y){
     const canvasY = y * cellSize;
     offCtx.fillStyle = COLORS.ACTUAL;
     offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
-    console.log("current sheep here:", canvasX, canvasY);
+    // console.log("current sheep here:", canvasX, canvasY);
 
     // var img = new Image();   // Create a new image object
     // img.src = 'favicon.ico';  // Set the source of the image
@@ -228,8 +228,17 @@ export function changeCave(caveId) {
     setSheepData({});
     drawGrid();
     loadCaveData(caveId);
-    // zoomLevel = 0.2;
     centerOn(300,300, 0.2);
+    setCurrentSheepId(null);
+}
+
+export function changeSheep(sheepId){
+    if (sheepId) {
+        setCurrentSheepId(sheepId);
+        const sheepData = getSheepData();
+        const { coordinates: { x, y } } = sheepData[sheepId];
+        centerOn(x, y);
+    }
 }
 
 export function centerOn(x, y, targenZoom) {
@@ -255,8 +264,8 @@ export function centerOn(x, y, targenZoom) {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Adjust offsets for zoom: The canvas coordinate (targetX, targetY) should be at the center of the viewport (400, 400) of div#map
-    offsetX = (centerX - targetX * zoomCenterLevel); // 400 is half of 800, which centers the point in the viewport
+    // Adjust offsets for zoom: The canvas coordinate (targetX, targetY) should be at the center of the viewport of div#map
+    offsetX = (centerX - targetX * zoomCenterLevel); 
     offsetY = (centerY - targetY * zoomCenterLevel);
 
     zoomLevel = zoomCenterLevel;
