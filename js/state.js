@@ -1,5 +1,6 @@
 export let currentCaveData = { cave: {} };
 export let currentCaveId = null;
+export let currentSheepId = null;
 export let sheepData = {};
 
 
@@ -25,4 +26,12 @@ export function setSheepData(newData) {
 
 export function getSheepData() {
     return sheepData;
+}
+
+export function setCurrentSheepId(newId) {
+    currentSheepId = newId;
+}
+
+export function getCurrentSheepId() {
+    return currentSheepId;
 }

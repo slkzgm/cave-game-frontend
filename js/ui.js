@@ -1,6 +1,6 @@
 import { COLORS } from './constants.js';
 import { drawGrid, loadCaveData, drawSheep, centerOn } from './grid.js';
-import { getCurrentCaveData, setCurrentCaveData, getSheepData, getCurrentCaveId } from './state.js';
+import { getCurrentCaveData, setCurrentCaveData, getSheepData, getCurrentCaveId, getCurrentSheepId, setCurrentSheepId, currentSheepId} from './state.js';
 import { BACKEND_URL } from './constants.js';
 
 // export function loadColors() {
@@ -204,13 +204,17 @@ export function updateSheepSelector() {
         const option = document.createElement('option');
 
         drawSheep(x,y);
-        centerOn(x,y, 0.8)
 
-        // d3.select(`rect[coord-x="${x}"][coord-y="${y}"]`).attr("fill", COLORS.ACTUAL);
         option.value = sheepId;
         option.textContent = `Sheep ${sheepId} (x: ${x}, y: ${y})`;
         sheepSelector.appendChild(option);
     });
+    const currentSheepId = getCurrentSheepId()
+    if(currentSheepId){
+        // console.log("setting sheep-selector to:", currentSheepId);
+        document.getElementById('sheep-selector').value = currentSheepId;
+    }
+    
 }
 
 export function updateCaveDetails(caveDetails) {
