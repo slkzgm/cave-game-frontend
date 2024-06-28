@@ -51,7 +51,7 @@ canvas.addEventListener('wheel', function(e) {
     zoomLevel += delta;
     zoomLevel = Math.max(0.1, Math.min(zoomLevel, 10)); // Clamp the zoom level
 
-    console.log("zoom level:", zoomLevel);
+    // console.log("zoom level:", zoomLevel);
 
     // Calculate the new offset to keep the mouse position as the center of zoom
     offsetX -= (mouseX - offsetX) * (zoomLevel - oldZoom) / oldZoom;
@@ -64,15 +64,15 @@ canvas.addEventListener('wheel', function(e) {
 
 // copy the pre-rendered off-screen canvas to the visible canvas
 function redrawCanvas() {
-    console.log("offsetX and offsetY:", offsetX, offsetY);
-    console.log("zoomLevel:", zoomLevel);
+    // console.log("offsetX and offsetY:", offsetX, offsetY);
+    // console.log("zoomLevel:", zoomLevel);
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
     context.translate(offsetX, offsetY);
     context.scale(zoomLevel, zoomLevel);
     context.drawImage(offScreenCanvas, 0, 0);
     context.restore();
-    console.log("redrawCanvas ends!");
+    // console.log("redrawCanvas ends!");
 }
 
 
@@ -197,7 +197,7 @@ export function drawSheep(x,y){
     const canvasY = y * cellSize;
     offCtx.fillStyle = COLORS.ACTUAL;
     offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
-    console.log("current sheep here:", canvasX, canvasY);
+    // console.log("current sheep here:", canvasX, canvasY);
 
     // var img = new Image();   // Create a new image object
     // img.src = 'favicon.ico';  // Set the source of the image
@@ -236,6 +236,13 @@ export function centerOn(x, y, targenZoom) {
     // console.log("centerOn Start")
     // console.log("zoomLevel:", zoomLevel);
 
+    let zoomCenterLevel = 0;
+    if(!targenZoom){
+        zoomCenterLevel = zoomLevel;
+    }else{
+        zoomCenterLevel = targenZoom;
+    }
+
     // Get the bounding rectangle of the map container
     const mapDiv = document.getElementById('map');
     const rect = mapDiv.getBoundingClientRect();
@@ -249,10 +256,10 @@ export function centerOn(x, y, targenZoom) {
     const centerY = rect.height / 2;
 
     // Adjust offsets for zoom: The canvas coordinate (targetX, targetY) should be at the center of the viewport (400, 400) of div#map
-    offsetX = (centerX - targetX * targenZoom); // 400 is half of 800, which centers the point in the viewport
-    offsetY = (centerY - targetY * targenZoom);
+    offsetX = (centerX - targetX * zoomCenterLevel); // 400 is half of 800, which centers the point in the viewport
+    offsetY = (centerY - targetY * zoomCenterLevel);
 
-    zoomLevel = targenZoom;
+    zoomLevel = zoomCenterLevel;
 
     // console.log("New offsetX and offsetY calculated to center on cell:", offsetX, offsetY);
 
