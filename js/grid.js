@@ -236,6 +236,13 @@ export function centerOn(x, y, targenZoom) {
     // console.log("centerOn Start")
     // console.log("zoomLevel:", zoomLevel);
 
+    let zoomCenterLevel = 0;
+    if(!targenZoom){
+        zoomCenterLevel = zoomLevel;
+    }else{
+        zoomCenterLevel = targenZoom;
+    }
+
     // Get the bounding rectangle of the map container
     const mapDiv = document.getElementById('map');
     const rect = mapDiv.getBoundingClientRect();
@@ -249,13 +256,14 @@ export function centerOn(x, y, targenZoom) {
     const centerY = rect.height / 2;
 
     // Adjust offsets for zoom: The canvas coordinate (targetX, targetY) should be at the center of the viewport (400, 400) of div#map
-    offsetX = (centerX - targetX * targenZoom); // 400 is half of 800, which centers the point in the viewport
-    offsetY = (centerY - targetY * targenZoom);
+    offsetX = (centerX - targetX * zoomCenterLevel); // 400 is half of 800, which centers the point in the viewport
+    offsetY = (centerY - targetY * zoomCenterLevel);
 
-    zoomLevel = targenZoom;
+    zoomLevel = zoomCenterLevel;
 
     // console.log("New offsetX and offsetY calculated to center on cell:", offsetX, offsetY);
 
     // console.log("centerOn End");
     redrawCanvas();
 }
+

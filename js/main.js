@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sheepId) {
             const sheepData = getSheepData();
             const { coordinates: { x, y } } = sheepData[sheepId];
-            centerOn(x, y, 0.8);
+            centerOn(x, y);
         }
     });
 
