@@ -3,6 +3,7 @@ import { updateSheepSelector, updateCaveDetails } from './ui.js';
 import { setCurrentCaveId, setSheepData, getSheepData } from './state.js';
 
 let visibleCells = {};  // Object to store the state of each visible cell
+const walkedBy = [];
 
 const canvas = document.getElementById('mazeCanvas');
 const cellSize = 8;
@@ -98,11 +99,12 @@ export function drawGrid() {
 
 
 let heatColor = (movements) => {
-    if (movements === 1) return 'green';
-    if (movements <= 3) return 'yellow';
-    if (movements <= 8) return 'orange';
-    if (movements > 8) return 'red';
-    return '#fff';  // Default color
+    if (movements === null) return '#e1e1e1'
+    if (movements === 1) return '#00ff00'; // green
+    if (movements <= 3) return '#ffff00'; // yellow
+    if (movements <= 8) return '#ffa500'; // orange
+    if (movements > 8) return '#ff0000'; // red
+    return '#e1e1e1';  // Default color
 };
 
 
@@ -111,7 +113,7 @@ export function drawVisible(visibleCell) {
         console.error("Invalid cell data", visibleCell);
         return; // Skip drawing this cell to avoid errors
     }
-    const { x, y, directions, diggable, movements } = visibleCell;
+    const { x, y } = visibleCell;
     visibleCells[`${x},${y}`] = visibleCell;  // Store cell state keyed by its coordinates
     redrawCell(x, y);
 }
@@ -122,17 +124,30 @@ function redrawCell(x, y) {
         console.error("No data available for cell:", x, y);
         return; // Exit if no data is found
     }
-    const { directions, movements } = visibleCell;
+    const { directions, diggable, movements } = visibleCell;
     const canvasX = x * cellSize;
     const canvasY = y * cellSize;
+    const position = x + y * gridSize;
 
-    offCtx.fillStyle = heatColor(movements);
+    const walked = walkedBy.includes(position);
+    const baseColor = diggable ? '#00fff7' : heatColor(movements);
+
+    if (walked) {
+        offCtx.fillStyle = addOpacity(baseColor, 0.4);
+    } else {
+        offCtx.fillStyle = baseColor;
+    }
     offCtx.fillRect(canvasX, canvasY, cellSize, cellSize);
     offCtx.strokeStyle = COLORS.GRID;
     offCtx.lineWidth = 1;
     offCtx.strokeRect(canvasX, canvasY, cellSize, cellSize);
 
     drawBorders(offCtx, canvasX, canvasY, directions);
+}
+
+function addOpacity(color, opacity) {
+    const [r, g, b] = color.match(/\w\w/g).map(hex => parseInt(hex, 16));
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
 function drawBorders(ctx, canvasX, canvasY, directions) {
@@ -171,13 +186,26 @@ export function processAndRenderData(data) {
     const sheepData = getSheepData();
     const toDraw = Object.values(data.reduce((acc, currentObj) => {
         const { sheepId, totalSteps, coordinates: { x, y }} = currentObj;
+        walkedBy.push(currentObj.position);
         sheepData[sheepId] = { totalSteps, coordinates: { x, y } };
         currentObj.visible.forEach(element => {
             if (element && element.x !== undefined && element.y !== undefined && element.directions !== undefined) {
                 const positionKey = `${element.x},${element.y}`;
+                const walkedOn = currentObj.position === element.position;
+
                 if (!acc[positionKey]) {
-                    acc[positionKey] = {...element, movements: 1}; // Set movements to 1 if it's a new element
-                } 
+                    acc[positionKey] = {
+                        x: element.x,
+                        y: element.y,
+                        position: element.position,
+                        directions: element.directions,
+                        diggable: element.diggable,
+                        movements: element.movements ? element.movements : (walkedOn ? 1 : null)
+                    };
+                } else if (walkedOn && acc[positionKey].movements === null) {
+                    acc[positionKey].movements = 1;
+                }
+                console.log(acc[positionKey].movements);
             } else {
                 console.error("Missing or invalid data for visible element:", element);
             }
