@@ -30,7 +30,6 @@ export function getSheepData() {
 
 export function setCurrentSheepId(newId) {
     currentSheepId = newId;
-    console.log("setting current sheep id:", currentSheepId)
 }
 
 export function getCurrentSheepId() {
